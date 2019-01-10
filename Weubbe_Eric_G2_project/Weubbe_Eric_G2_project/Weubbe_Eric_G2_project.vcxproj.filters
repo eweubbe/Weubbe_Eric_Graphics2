@@ -52,5 +52,16 @@
     <Filter Include="Gateware Source">
       <UniqueIdentifier>{b6c72e31-647e-44cd-a60d-0b316676c04d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{76b5d70a-4947-4294-9030-1f8b13b97afe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="MyVShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="MyPShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
