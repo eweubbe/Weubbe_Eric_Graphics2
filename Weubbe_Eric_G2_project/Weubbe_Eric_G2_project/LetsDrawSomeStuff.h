@@ -35,12 +35,29 @@ class LetsDrawSomeStuff
 	ID3D11VertexShader* vShader; //HLSL (high level shading laguage)
 	ID3D11PixelShader* pShader; //HLSL
 
+	//contains data for a vertex
 	struct Vertex
 	{
 		XMFLOAT4 pos;
 		XMFLOAT4 color;
 		XMFLOAT2 uv;
 	};
+
+	//contains data for world, projection, and view matricies
+	struct ConstantBuffer
+	{
+		XMMATRIX world;
+		XMMATRIX view;
+		XMMATRIX projection;
+	};
+
+	Vertex* obj1 = nullptr;
+	int numVertices = 0;
+	int* vertices;
+	int numIndices = 0;
+
+	//fills array with appropriate vertex info to draw a test triangle
+	void Triangle(Vertex** _obj);
 
 public:
 	// Init
@@ -88,7 +105,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//	{ {0.5f, -0.5f, 0, 1}, {1,1,1,1} },
 			//	{ {-0.5f, -0.5f, 0, 1}, {1,1,1,1} }
 			//];
-			Vertex tri[3];
+			/*Vertex tri[3];
 			tri[0].pos.x = 0;
 			tri[0].pos.y = 0.5f;
 			tri[0].pos.z = 0;
@@ -120,9 +137,10 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			tri[2].color.z = 1;
 			tri[2].color.w = 1;
 			tri[2].uv.x = 0;
-			tri[2].uv.y = 0;
+			tri[2].uv.y = 0;*/
 
-			//LOAD TRIANGLE ONTO THE VIDEO CARD////////////////////////////////////
+			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
+			Triangle(&obj1);
 			D3D11_BUFFER_DESC bDesc;
 			D3D11_SUBRESOURCE_DATA subData;
 			ZeroMemory(&bDesc, sizeof(bDesc));
@@ -130,7 +148,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//set up buffer description
 			bDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			bDesc.ByteWidth = sizeof(Vertex) * 3;
+			bDesc.ByteWidth = sizeof(Vertex) * numVertices;
 			bDesc.CPUAccessFlags = 0;
 			bDesc.MiscFlags = 0;
 			bDesc.StructureByteStride = 0;
@@ -138,7 +156,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 
 			//set up subdata
-			subData.pSysMem = tri;
+			subData.pSysMem = obj1;
 
 			//create buffer
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &vBuffer);
@@ -171,6 +189,49 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 	}
 }
 
+//fills array with appropriate vertex info to draw a test triangle
+void LetsDrawSomeStuff::Triangle(Vertex** _obj)
+{
+	Vertex* temp;
+	temp = new Vertex[3];
+	temp[0].pos.x = 0;
+	temp[0].pos.y = 0.5f;
+	temp[0].pos.z = 0;
+	temp[0].pos.w = 1;
+	temp[0].color.x = 1;
+	temp[0].color.y = 1;
+	temp[0].color.z = 1;
+	temp[0].color.w = 1;
+	temp[0].uv.x = 0;
+	temp[0].uv.y = 0;
+
+	temp[1].pos.x = 0.5f;
+	temp[1].pos.y = -0.5f;
+	temp[1].pos.z = 0;
+	temp[1].pos.w = 1;
+	temp[1].color.x = 1;
+	temp[1].color.y = 1;
+	temp[1].color.z = 1;
+	temp[1].color.w = 1;
+	temp[1].uv.x = 0;
+	temp[1].uv.y = 0;
+
+	temp[2].pos.x = -0.5f;
+	temp[2].pos.y = -0.5f;
+	temp[2].pos.z = 0;
+	temp[2].pos.w = 1;
+	temp[2].color.x = 1;
+	temp[2].color.y = 1;
+	temp[2].color.z = 1;
+	temp[2].color.w = 1;
+	temp[2].uv.x = 0;
+	temp[2].uv.y = 0;
+
+	*_obj = temp;
+
+	numVertices = 3;
+}
+
 // Shutdown
 LetsDrawSomeStuff::~LetsDrawSomeStuff()
 {
@@ -184,6 +245,9 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	vLayout->Release();
 	vShader->Release();
 	pShader->Release();
+
+	//delete dynamic memory
+	delete[] obj1;
 
 	if (mySurface) // Free Gateware Interface
 	{
@@ -239,7 +303,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pShader, 0, 0);
 
 			//Draw (nothing actually happens until draw is called)
-			myContext->Draw(3, 0);
+			myContext->Draw(numVertices, 0);
 
 			/////////////////////////////////////////////////////////////////////////////
 
