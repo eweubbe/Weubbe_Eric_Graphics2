@@ -53,6 +53,7 @@ class LetsDrawSomeStuff
 		XMFLOAT4 pos;
 		XMFLOAT4 color;
 		XMFLOAT2 uv;
+		XMFLOAT4 normal;
 	};
 
 	//contains data for world, projection, and view matricies
@@ -185,10 +186,11 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 				{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 				{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0},
 				{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{"NORMAL", 0,  DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0}
 			};
 
 			//input layout (day 1 vid)
-			hr = myDevice->CreateInputLayout(ieDesc, 3, MyVShader, sizeof(MyVShader), &vLayout);
+			hr = myDevice->CreateInputLayout(ieDesc, 4, MyVShader, sizeof(MyVShader), &vLayout);
 			////////////////////////////////////////////////////////////////////
 
 			//reset timer variables
@@ -376,12 +378,14 @@ void LetsDrawSomeStuff::Render()
 
 		if (deltaT > (1.0f / 60.0f))
 		{
+			//update the degree of the object's rotation
 			rotationDegree += 0.02f;
 			if (rotationDegree >= 360)
 				rotationDegree = 0;
 			deltaT -= deltaT;
 		}
 
+		//rotate object
 		worldM = XMMatrixRotationY(rotationDegree);
 
 		// this could be changed during resolution edits, get it every frame

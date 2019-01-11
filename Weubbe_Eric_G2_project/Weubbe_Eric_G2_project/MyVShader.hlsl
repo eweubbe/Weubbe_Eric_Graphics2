@@ -18,6 +18,7 @@ struct InputVertex
 	float4 pos : POSITION;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD0;
+	float4 normal : NORMAL;
 };
 
 struct OutputVertex
@@ -25,6 +26,7 @@ struct OutputVertex
 	float4 pos : SV_POSITION; //SV: system value
 	float4 color : COLOR;
 	float2 uv : TEXCOORD0;
+	float4 normal : NORMAL;
 };
 
 OutputVertex main(InputVertex _input)
