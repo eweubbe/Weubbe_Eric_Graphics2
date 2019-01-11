@@ -6,12 +6,16 @@
 // Include DirectX11 for interface access
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <directxcolors.h>
 
 //include compiled shaders
 #include "myVShader.csh"
 #include "myPShader.csh"
 
 using namespace DirectX;
+
+//funtime random color 
+#define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -68,6 +72,7 @@ class LetsDrawSomeStuff
 	//fills array with appropriate vertex info to draw a test cube
 	void Cube(Vertex** _obj);
 
+
 public:
 	// Init
 	LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint);
@@ -111,6 +116,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
 			Cube(&obj1);
+
 			D3D11_BUFFER_DESC bDesc;
 			D3D11_SUBRESOURCE_DATA subData;
 			ZeroMemory(&bDesc, sizeof(bDesc));
@@ -179,7 +185,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			////////////////////////////////////////////////////////////////////
 
 			hr = 0;
-
 		}
 	}
 }
@@ -230,77 +235,97 @@ void LetsDrawSomeStuff::Triangle(Vertex** _obj)
 //fills array with appropriate vertex info to draw a test cube
 void LetsDrawSomeStuff::Cube(Vertex** _obj)
 {
-	XMFLOAT4 CubeColor = { 1,1,1,1 };
+	//XMFLOAT4 CubeColor = { rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f };
+	XMFLOAT4 CubeColor = RAND_COLOR;
 	Vertex* temp;
-	temp = new Vertex[36];
+	//temp = new Vertex[36];
 
-	//front of cube 0-5
-	temp[0] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
-	temp[1] = { XMFLOAT4(-0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
-	temp[2] = { XMFLOAT4(0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 0.0f) };
-	temp[3] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 1.0f) };
-	temp[4] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
-	temp[5] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
+	////front of cube 0-5
+	//temp[0] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
+	//temp[1] = { XMFLOAT4(-0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
+	//temp[2] = { XMFLOAT4(0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 0.0f) };
+	//temp[3] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 1.0f) };
+	//temp[4] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
+	//temp[5] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
 
-		//right side of cube 6-11
-	temp[6] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[7] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[8] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	temp[9] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	temp[10] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	temp[11] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//	//right side of cube 6-11
+	//temp[6] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[7] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[8] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+	//temp[9] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+	//temp[10] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//temp[11] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
 
-		//back of cube 12-17
-	temp[12] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[13] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[14] = { XMFLOAT4(-0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	temp[15] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	temp[16] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	temp[17] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//	//back of cube 12-17
+	//temp[12] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[13] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[14] = { XMFLOAT4(-0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+	//temp[15] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+	//temp[16] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//temp[17] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
 
-		//left side of cube 18-23
-	temp[18] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[19] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[20] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	temp[21] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	temp[22] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	temp[23] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//	//left side of cube 18-23
+	//temp[18] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[19] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[20] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+	//temp[21] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+	//temp[22] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//temp[23] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
 
-		//top of cube 24-29
-	temp[24] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[25] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[26] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	temp[27] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	temp[28] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	temp[29] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//	//top of cube 24-29
+	//temp[24] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[25] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[26] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+	//temp[27] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+	//temp[28] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//temp[29] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
 
-		//bottom of cube 30-35
-	temp[30] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[31] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	temp[32] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	temp[33] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	temp[34] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	temp[35] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//	//bottom of cube 30-35
+	//temp[30] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[31] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+	//temp[32] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+	//temp[33] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+	//temp[34] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+	//temp[35] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+
+	temp = new Vertex[8];
+	
+	temp[0] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[1] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[2] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[3] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	
+	temp[4] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[5] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[6] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[7] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+
+	for (int i = 0; i < 8; ++i)
+	{
+		temp[i].color = RAND_COLOR;
+	}
+
+	
 
 	indices = new int[36] 
 	{
-		0,2,4,
-		1,3,5,
-		6,8,10,
-		7,9,11,
-		12,14,16,
-		13,15,17,
-		18,20,22,
-		19,21,23,
-		24,26,28,
-		25,27,29,
-		30,32,34,
-		31,33,35
+		0,1,3,
+		3,1,2,
+		0,4,5,
+		0,5,1,
+		1,5,2,
+		2,5,6,
+		4,0,7,
+		7,0,3,
+		7,3,2,
+		7,2,6,
+		5,4,6,
+		6,4,7
 	};
 
 	numIndices = 36;
 
-	numVertices = 36;
+	numVertices = 8;
 	*_obj = temp;
 }
 
@@ -350,7 +375,8 @@ void LetsDrawSomeStuff::Render()
 
 			// Clear the screen to dark green
 			const float d_green[] = { 0, 0.5f, 0, 1 };
-			myContext->ClearRenderTargetView(myRenderTargetView, d_green);
+			const float black[] = { 0,0,0,1 };
+			myContext->ClearRenderTargetView(myRenderTargetView, black);
 
 			//update constant buffer
 			ConstantBuffer conBuff;
@@ -381,12 +407,14 @@ void LetsDrawSomeStuff::Render()
 
 			//vertex shader stage
 			myContext->VSSetShader(vShader, 0, 0);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 
 			//pixel shader stage
 			myContext->PSSetShader(pShader, 0, 0);
+			
 
 			//Draw (nothing actually happens until draw is called)
-			myContext->Draw(numVertices, 0);
+			myContext->DrawIndexed(numIndices, 0, 0);
 
 			/////////////////////////////////////////////////////////////////////////////
 
