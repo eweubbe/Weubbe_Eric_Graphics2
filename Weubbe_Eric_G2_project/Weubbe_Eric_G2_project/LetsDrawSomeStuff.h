@@ -7,6 +7,7 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <directxcolors.h>
+#include"XTime.h"
 
 //include compiled shaders
 #include "myVShader.csh"
@@ -67,6 +68,12 @@ class LetsDrawSomeStuff
 	int* indices = nullptr;
 	int numIndices = 0;
 
+	//timer variables
+	XTime timer;
+	float deltaT;
+	float rotationDegree;
+	
+	//Test Functions
 	//fills array with appropriate vertex info to draw a test triangle
 	void Triangle(Vertex** _obj);
 	//fills array with appropriate vertex info to draw a test cube
@@ -184,7 +191,10 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreateInputLayout(ieDesc, 3, MyVShader, sizeof(MyVShader), &vLayout);
 			////////////////////////////////////////////////////////////////////
 
-			hr = 0;
+			//reset timer variables
+			timer.Restart();
+			deltaT = 0;
+			rotationDegree = 0;
 		}
 	}
 }
@@ -361,6 +371,19 @@ void LetsDrawSomeStuff::Render()
 {
 	if (mySurface) // valid?
 	{
+		timer.Signal();
+		deltaT += (float)timer.Delta();
+
+		if (deltaT > (1.0f / 60.0f))
+		{
+			rotationDegree += 0.02f;
+			if (rotationDegree >= 360)
+				rotationDegree = 0;
+			deltaT -= deltaT;
+		}
+
+		worldM = XMMatrixRotationY(rotationDegree);
+
 		// this could be changed during resolution edits, get it every frame
 		ID3D11RenderTargetView *myRenderTargetView = nullptr;
 		ID3D11DepthStencilView *myDepthStencilView = nullptr;

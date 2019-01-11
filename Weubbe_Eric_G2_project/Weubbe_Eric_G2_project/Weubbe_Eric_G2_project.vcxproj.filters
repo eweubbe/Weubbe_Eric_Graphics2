@@ -44,9 +44,7 @@
     <ClCompile Include="Gateware Redistribution R5d\Source\G_System\GWindow.cpp">
       <Filter>Gateware Source</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="LetsDrawSomeStuff.h" />
+    <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Gateware Source">
@@ -54,6 +52,9 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{76b5d70a-4947-4294-9030-1f8b13b97afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{19951ed0-32e4-40b8-9e47-f7c5f37e83dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,5 +64,13 @@
     <FxCompile Include="MyPShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LetsDrawSomeStuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XTime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
