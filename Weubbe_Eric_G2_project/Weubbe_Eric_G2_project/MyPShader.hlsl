@@ -1,5 +1,12 @@
 //super basic pixel shader
-float4 main() : SV_TARGET
+struct InputVertex
 {
-	 return float4(1,0,0,1); // outputs red
+	float4 pos : SV_POSITION; //SV: system value
+	float4 color : COLOR;
+	float2 uv : TEXCOORD0;
+};
+
+float4 main(InputVertex _input) : SV_TARGET
+{
+	 return _input.color; // outputs red
 }

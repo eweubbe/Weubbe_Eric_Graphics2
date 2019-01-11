@@ -6,6 +6,13 @@
 // 2) input layout
 // 3) HLSL Vertex struct
 
+cbuffer ConstantBuffer : register(b0)
+{
+	matrix world;
+	matrix view;
+	matrix projection;
+}
+
 struct InputVertex
 {
 	float4 pos : POSITION;
@@ -23,9 +30,10 @@ struct OutputVertex
 OutputVertex main(InputVertex _input)
 {
 	OutputVertex output = (OutputVertex)0;
-	output.pos = _input.pos;
-
-	//Do math here
+	output.pos = mul(_input.pos, world);
+	output.pos = mul(output.pos, view);
+	output.pos = mul(output.pos, projection);
+	output.color = _input.color;
 
 	return output;
 }
