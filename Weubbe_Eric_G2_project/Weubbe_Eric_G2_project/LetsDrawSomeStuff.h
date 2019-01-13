@@ -12,6 +12,9 @@
 #include<fstream>
 #include"DynArray.h"
 
+//texture includes
+#include "t_DeadTree.h"
+
 //include compiled shaders
 #include "myVShader.csh"
 #include "myPShader.csh"
@@ -45,6 +48,9 @@ class LetsDrawSomeStuff
 	//shader variables
 	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
 	ID3D11PixelShader* pShader = nullptr; //HLSL
+
+	//texture variables
+	ID3D11Texture2D* treeTex = nullptr; //what we load pixel data into
 
 	//matrices
 	XMMATRIX worldM;
@@ -131,8 +137,36 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//example triangle
 
 			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
-			//Cube(&obj1);
+			
+			//Load/create meshes***************************
 			LoadOBJVerts("dead_tree1.txt", &obj1, &indices);
+			//*********************************************
+
+			//load texture data onto vRAM**************************
+			D3D11_TEXTURE2D_DESC texDesc;
+			D3D11_SUBRESOURCE_DATA texSrc[t_DeadTree_numlevels];
+			ZeroMemory(&texDesc, sizeof(texDesc));
+
+			texDesc.ArraySize = 1; // how many textures to load in
+			texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; //want to use the texture in a shader
+			texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+			texDesc.Height = t_DeadTree_height;
+			texDesc.Width = t_DeadTree_width;
+			texDesc.MipLevels = t_DeadTree_numlevels;
+			texDesc.Usage = D3D11_USAGE_IMMUTABLE;
+			texDesc.SampleDesc.Count = 1;
+
+			// each mip level needs its own SRD
+			for (int i = 0; i < t_DeadTree_numlevels; ++i)
+			{
+				ZeroMemory(&texSrc[i], sizeof(texSrc[i]));
+				texSrc[i].pSysMem = &t_DeadTree_pixels[t_DeadTree_leveloffsets[i]];
+				texSrc[i].SysMemPitch = (t_DeadTree_width >> i) * sizeof(UINT);
+			}
+			
+
+			hr = myDevice->CreateTexture2D(&texDesc, texSrc, &treeTex);
+			//*********************************************
 
 			D3D11_BUFFER_DESC bDesc;
 			D3D11_SUBRESOURCE_DATA subData;
@@ -355,10 +389,8 @@ void LetsDrawSomeStuff::Cube(Vertex** _obj)
 //process vertex information from OBJ file
 void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList)
 {
-	// set up output console
+	// set up output console for debugging
 	AllocConsole();
-	/*freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);*/
 
 	//dynamic arrays to temporarily store vertex information
 	DynArray<XMFLOAT4> posIn;
@@ -465,6 +497,7 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 
 			inds[i] = i;
 
+			//temporary
 			verts[i].color = RAND_COLOR;
 			++numVertices;
 		}
@@ -474,9 +507,6 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 		*_indList = inds;
 	}
 	inFile.close();
-	
-
-	
 }
 
 
