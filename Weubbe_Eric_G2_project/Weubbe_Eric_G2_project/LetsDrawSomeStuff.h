@@ -397,16 +397,19 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
 			{
 				UINT vertNum;
 
-				inFile >> vertNum;
-				indexIn.append(vertNum);
-				inFile.ignore(4);
+				for (int i = 0; i < 3; ++i)
+				{
+					inFile >> vertNum;
+					indexIn.append(vertNum - 1);
+					inFile.ignore();
 
-				inFile >> vertNum;
-				indexIn.append(vertNum);
-				inFile.ignore(4);
+					inFile >> vertNum;
+					
+					inFile.ignore();
 
-				inFile >> vertNum;
-				indexIn.append(vertNum);
+					inFile >> vertNum;
+				}
+				
 			}
 		}
 	}
