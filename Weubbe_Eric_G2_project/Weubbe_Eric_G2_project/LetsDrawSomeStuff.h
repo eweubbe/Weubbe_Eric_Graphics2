@@ -8,12 +8,16 @@
 #include <DirectXMath.h>
 #include <directxcolors.h>
 #include"XTime.h"
+#include<iostream>
+#include<fstream>
+#include"DynArray.h"
 
 //include compiled shaders
 #include "myVShader.csh"
 #include "myPShader.csh"
 
 using namespace DirectX;
+using namespace std;
 
 //funtime random color 
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
@@ -79,6 +83,9 @@ class LetsDrawSomeStuff
 	void Triangle(Vertex** _obj);
 	//fills array with appropriate vertex info to draw a test cube
 	void Cube(Vertex** _obj);
+	
+	//Load vertex information from OBJ file
+	void LoadOBJVerts(const char* _filename);
 
 
 public:
@@ -124,6 +131,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
 			Cube(&obj1);
+			LoadOBJVerts("dead_tree1.txt");
 
 			D3D11_BUFFER_DESC bDesc;
 			D3D11_SUBRESOURCE_DATA subData;
@@ -197,6 +205,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			timer.Restart();
 			deltaT = 0;
 			rotationDegree = 0;
+
+			
 		}
 	}
 }
@@ -340,6 +350,56 @@ void LetsDrawSomeStuff::Cube(Vertex** _obj)
 	numVertices = 8;
 	*_obj = temp;
 }
+
+//Load vertex information from OBJ file
+void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
+{
+	//dynamic arrays to temporarily store vertex information
+	DynArray<XMFLOAT4> posIn;
+	DynArray<XMFLOAT2> texIn;
+	DynArray<XMFLOAT4> normIn;
+
+	//read in the file
+	ifstream inFile;
+	inFile.open(_filename);
+
+	//buffer to hold raw file chars
+	char buffer[256] = { 0 };
+
+	if (inFile.is_open())
+	{
+		while (!inFile.eof())
+		{
+			inFile >> buffer;
+
+			if (0 == strcmp(buffer, "v"))
+			{
+				XMFLOAT4 xyzw;
+				xyzw.w = 1;
+				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
+				posIn.append(xyzw);
+			}
+			else if (0 == strcmp(buffer, "vt"))
+			{
+				XMFLOAT2 uv;
+				inFile >> uv.x >> uv.y;
+				texIn.append(uv);
+			}
+			else if (0 == strcmp(buffer, "vn"))
+			{
+				XMFLOAT4 xyzw;
+				xyzw.w = 0.0f;
+				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
+				normIn.append(xyzw);
+			}
+		}
+	}
+	inFile.close();
+	
+
+	
+}
+
 
 // Shutdown
 LetsDrawSomeStuff::~LetsDrawSomeStuff()

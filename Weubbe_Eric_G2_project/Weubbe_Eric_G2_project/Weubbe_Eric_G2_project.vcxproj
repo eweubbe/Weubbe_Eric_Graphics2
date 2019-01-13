@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DynArray.h" />
     <ClInclude Include="LetsDrawSomeStuff.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
