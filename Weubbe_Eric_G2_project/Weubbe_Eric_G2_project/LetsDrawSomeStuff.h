@@ -384,9 +384,9 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 				XMFLOAT4 xyzw;
 				xyzw.w = 1;
 				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
-				/*xyzw.x *= modelScale;
+				xyzw.x *= modelScale;
 				xyzw.y *= modelScale;
-				xyzw.z *= modelScale;*/
+				xyzw.z *= modelScale;
 				posIn.append(xyzw);
 			}
 			else if (0 == strcmp(buffer, "vt"))
@@ -436,11 +436,18 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			}*/
 
 			//print read in textures
-			cout << "Textures (u v)\n";
-			for (int i = 0; i < posIn.size(); ++i)
+			/*cout << "Textures (u v)\n";
+			for (int i = 0; i < texIn.size(); ++i)
 			{
 				cout << texIn[i].x << ' ' << texIn[i].y << '\n';
-			}
+			}*/
+
+			//print read in normals
+			/*cout << "Normals (x y z)\n";
+			for (int i = 0; i < normIn.size(); ++i)
+			{
+				cout << normIn[i].x << ' ' << normIn[i].y << ' ' << normIn[i].z << '\n';
+			}*/
 		}
 
 		//store the number of indices read in
@@ -456,9 +463,9 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			verts[i].uv = texIn[indexIn[i].y];
 			verts[i].normal = normIn[indexIn[i].z];
 
-			inds[i] = indexIn[i].x;
+			inds[i] = i;
 
-			verts[i].color = { 1,0,0,1 };
+			verts[i].color = RAND_COLOR;
 			++numVertices;
 		}
 
