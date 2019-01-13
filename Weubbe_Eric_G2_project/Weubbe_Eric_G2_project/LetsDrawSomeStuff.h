@@ -358,6 +358,7 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
 	DynArray<XMFLOAT4> posIn;
 	DynArray<XMFLOAT2> texIn;
 	DynArray<XMFLOAT4> normIn;
+	DynArray<UINT> indexIn;
 
 	//read in the file
 	ifstream inFile;
@@ -391,6 +392,21 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
 				xyzw.w = 0.0f;
 				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
 				normIn.append(xyzw);
+			}
+			else if (0 == strcmp(buffer, "f"))
+			{
+				UINT vertNum;
+
+				inFile >> vertNum;
+				indexIn.append(vertNum);
+				inFile.ignore(4);
+
+				inFile >> vertNum;
+				indexIn.append(vertNum);
+				inFile.ignore(4);
+
+				inFile >> vertNum;
+				indexIn.append(vertNum);
 			}
 		}
 	}
