@@ -35,16 +35,16 @@ class LetsDrawSomeStuff
 	// TODO: Add your own D3D11 variables here (be sure to "Release()" them when done!)
 	
 	//video card version of new
-	ID3D11Buffer* vBuffer;
-	ID3D11Buffer* iBuffer;
-	ID3D11Buffer* cBuffer;
+	ID3D11Buffer* vBuffer = nullptr;
+	ID3D11Buffer* iBuffer = nullptr;
+	ID3D11Buffer* cBuffer = nullptr;
 	//descirbes what a vertex looks like to directx
-	ID3D11InputLayout* vLayout;
+	ID3D11InputLayout* vLayout = nullptr;
 	//viewport
 	D3D11_VIEWPORT myPort;
 	//shader variables
-	ID3D11VertexShader* vShader; //HLSL (high level shading laguage)
-	ID3D11PixelShader* pShader; //HLSL
+	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
+	ID3D11PixelShader* pShader = nullptr; //HLSL
 
 	//matrices
 	XMMATRIX worldM;
@@ -70,8 +70,9 @@ class LetsDrawSomeStuff
 
 	Vertex* obj1 = nullptr;
 	int numVertices = 0;
-	int* indices = nullptr;
+	UINT* indices = nullptr;
 	int numIndices = 0;
+	float modelScale = 0.5f;
 
 	//timer variables
 	XTime timer;
@@ -84,8 +85,8 @@ class LetsDrawSomeStuff
 	//fills array with appropriate vertex info to draw a test cube
 	void Cube(Vertex** _obj);
 	
-	//Load vertex information from OBJ file
-	void LoadOBJVerts(const char* _filename);
+	//process vertex information from OBJ file
+	void LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList);
 
 
 public:
@@ -130,8 +131,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//example triangle
 
 			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
-			Cube(&obj1);
-			LoadOBJVerts("dead_tree1.txt");
+			//Cube(&obj1);
+			LoadOBJVerts("dead_tree1.txt", &obj1, &indices);
 
 			D3D11_BUFFER_DESC bDesc;
 			D3D11_SUBRESOURCE_DATA subData;
@@ -155,7 +156,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &vBuffer);
 
 			//INDEX BUFFER
-			bDesc.ByteWidth = sizeof(int) * numIndices;
+			bDesc.ByteWidth = sizeof(UINT) * numIndices;
 			bDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 			subData.pSysMem = indices;
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &iBuffer);
@@ -329,7 +330,7 @@ void LetsDrawSomeStuff::Cube(Vertex** _obj)
 
 	
 
-	indices = new int[36] 
+	indices = new UINT[36] 
 	{
 		0,1,3,
 		3,1,2,
@@ -351,14 +352,19 @@ void LetsDrawSomeStuff::Cube(Vertex** _obj)
 	*_obj = temp;
 }
 
-//Load vertex information from OBJ file
-void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
+//process vertex information from OBJ file
+void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList)
 {
+	// set up output console
+	AllocConsole();
+	/*freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);*/
+
 	//dynamic arrays to temporarily store vertex information
 	DynArray<XMFLOAT4> posIn;
 	DynArray<XMFLOAT2> texIn;
 	DynArray<XMFLOAT4> normIn;
-	DynArray<UINT> indexIn;
+	DynArray<XMINT3> indexIn;
 
 	//read in the file
 	ifstream inFile;
@@ -378,6 +384,9 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
 				XMFLOAT4 xyzw;
 				xyzw.w = 1;
 				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
+				/*xyzw.x *= modelScale;
+				xyzw.y *= modelScale;
+				xyzw.z *= modelScale;*/
 				posIn.append(xyzw);
 			}
 			else if (0 == strcmp(buffer, "vt"))
@@ -395,23 +404,67 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename)
 			}
 			else if (0 == strcmp(buffer, "f"))
 			{
-				UINT vertNum;
+				//variable to store pos(x)/texture(y)/normal(z) indices
+				XMINT3 val;
 
 				for (int i = 0; i < 3; ++i)
 				{
-					inFile >> vertNum;
-					indexIn.append(vertNum - 1);
+					inFile >> val.x;
+					val.x -= 1;
 					inFile.ignore();
 
-					inFile >> vertNum;
-					
+					inFile >> val.y;
+					val.y -= 1;
 					inFile.ignore();
 
-					inFile >> vertNum;
+					inFile >> val.z;
+					val.z -= 1;
+					indexIn.append(val);
 				}
 				
 			}
 		}
+		
+		//debugging output
+		if (_DEBUG)
+		{
+			// print read in positions
+			/*cout << "Positions (x y z)\n";
+			for (int i = 0; i < posIn.size(); ++i)
+			{
+				cout << posIn[i].x << ' ' << posIn[i].y << ' ' << posIn[i].z << '\n';
+			}*/
+
+			//print read in textures
+			cout << "Textures (u v)\n";
+			for (int i = 0; i < posIn.size(); ++i)
+			{
+				cout << texIn[i].x << ' ' << texIn[i].y << '\n';
+			}
+		}
+
+		//store the number of indices read in
+		numIndices = indexIn.size();
+		numVertices = 0;
+		//temporary vertex and index array
+		Vertex* verts = new Vertex[numIndices];
+		UINT* inds = new UINT[numIndices];
+		//populate new vertex array with read in data
+		for (int i = 0; i < numIndices; ++i)
+		{
+			verts[i].pos = posIn[indexIn[i].x];
+			verts[i].uv = texIn[indexIn[i].y];
+			verts[i].normal = normIn[indexIn[i].z];
+
+			inds[i] = indexIn[i].x;
+
+			verts[i].color = { 1,0,0,1 };
+			++numVertices;
+		}
+
+		//assign temp vert array to array param
+		*_obj = verts;
+		*_indList = inds;
 	}
 	inFile.close();
 	
