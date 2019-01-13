@@ -51,6 +51,8 @@ class LetsDrawSomeStuff
 
 	//texture variables
 	ID3D11Texture2D* treeTex = nullptr; //what we load pixel data into
+	ID3D11ShaderResourceView* treeView = nullptr;
+	//ID3D11Resource* treeResource;
 
 	//matrices
 	XMMATRIX worldM;
@@ -166,6 +168,16 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			
 
 			hr = myDevice->CreateTexture2D(&texDesc, texSrc, &treeTex);
+
+			//shader resource veiw creation
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+			ZeroMemory(&srvDesc, sizeof(srvDesc));
+			srvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = t_DeadTree_numlevels;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+
+			hr = myDevice->CreateShaderResourceView(treeTex, &srvDesc, &treeView);
 			//*********************************************
 
 			D3D11_BUFFER_DESC bDesc;
@@ -525,6 +537,8 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	vLayout->Release();
 	vShader->Release();
 	pShader->Release();
+	treeTex->Release();
+	treeView->Release();
 
 	//delete dynamic memory
 	delete[] obj1;
@@ -606,6 +620,8 @@ void LetsDrawSomeStuff::Render()
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 
 			//pixel shader stage
+			ID3D11ShaderResourceView* srvs[] = { treeView };
+			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetShader(pShader, 0, 0);
 			
 

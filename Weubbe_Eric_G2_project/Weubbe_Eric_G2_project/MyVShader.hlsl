@@ -35,8 +35,9 @@ OutputVertex main(InputVertex _input)
 	output.pos = mul(_input.pos, world);
 	output.pos = mul(output.pos, view);
 	output.pos = mul(output.pos, projection);
+	output.uv = _input.uv;
+	output.normal = _input.normal;
 	output.color = _input.color;
-	//output.uv = _input.uv;
 
 	return output;
 }
