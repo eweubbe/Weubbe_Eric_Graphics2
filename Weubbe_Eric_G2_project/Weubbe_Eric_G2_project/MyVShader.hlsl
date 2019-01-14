@@ -21,7 +21,7 @@ struct InputVertex
 	float4 normal : NORMAL;
 };
 
-struct OutputVertex
+struct PSVertex
 {
 	float4 pos : SV_POSITION; //SV: system value
 	float4 color : COLOR;
@@ -29,14 +29,20 @@ struct OutputVertex
 	float4 normal : NORMAL;
 };
 
-OutputVertex main(InputVertex _input)
+PSVertex main(InputVertex _input)
 {
-	OutputVertex output = (OutputVertex)0;
+	PSVertex output = (PSVertex)0;
+	//position
 	output.pos = mul(_input.pos, world);
 	output.pos = mul(output.pos, view);
 	output.pos = mul(output.pos, projection);
-	output.uv = _input.uv;
+
+	//lighting
 	output.normal = _input.normal;
+
+	//texture
+	output.uv = _input.uv;
+	
 	output.color = _input.color;
 
 	return output;

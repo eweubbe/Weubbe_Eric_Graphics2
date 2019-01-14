@@ -51,6 +51,7 @@ class LetsDrawSomeStuff
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 
 	//texture variables
+	ID3D11SamplerState* SamplerLinear = nullptr;
 	ID3D11Texture2D* treeTex = nullptr; //what we load pixel data into
 	ID3D11ShaderResourceView* treeView = nullptr;
 
@@ -184,6 +185,16 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//dds loader way
 			hr = CreateDDSTextureFromFile(myDevice, L"t_DeadTree.dds", (ID3D11Resource**)&treeTex, &treeView);
 
+			// Create the sample state
+			D3D11_SAMPLER_DESC sampDesc = {};
+			sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+			sampDesc.MinLOD = 0;
+			sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+			hr = myDevice->CreateSamplerState(&sampDesc, &SamplerLinear);
 			//*********************************************
 
 			D3D11_BUFFER_DESC bDesc;
@@ -559,6 +570,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	pShader->Release();
 	treeTex->Release();
 	treeView->Release();
+	SamplerLinear->Release();
 
 	//delete dynamic memory
 	delete[] obj1;
@@ -642,6 +654,7 @@ void LetsDrawSomeStuff::Render()
 			//pixel shader stage
 			ID3D11ShaderResourceView* srvs[] = { treeView };
 			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetShader(pShader, 0, 0);
 			
 
