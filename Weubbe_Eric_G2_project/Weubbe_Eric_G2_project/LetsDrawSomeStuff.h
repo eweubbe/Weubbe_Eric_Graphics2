@@ -75,6 +75,9 @@ class LetsDrawSomeStuff
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
+		XMFLOAT4 LightDir[1];
+		XMFLOAT4 LightColor[1];
+		XMFLOAT4 OutputColor;
 	};
 
 	Vertex* obj1 = nullptr;
@@ -96,6 +99,7 @@ class LetsDrawSomeStuff
 	
 	//process vertex information from OBJ file
 	void LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList);
+	void Compactify(Vertex** _obj, UINT** _indList);
 
 
 public:
@@ -188,9 +192,9 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
 			sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+			sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+			sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 			sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 			sampDesc.MinLOD = 0;
 			sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
@@ -517,11 +521,11 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			}*/
 
 			//print read in textures
-			/*cout << "Textures (u v)\n";
+			cout << "Textures (u v)\n";
 			for (int i = 0; i < texIn.size(); ++i)
 			{
 				cout << texIn[i].x << ' ' << texIn[i].y << '\n';
-			}*/
+			}
 
 			//print read in normals
 			/*cout << "Normals (x y z)\n";
@@ -548,8 +552,68 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 		//assign temp vert array to array param
 		*_obj = verts;
 		*_indList = inds;
+
+		//Compactify(_obj, _indList);
 	}
 	inFile.close();
+}
+
+void LetsDrawSomeStuff::Compactify(Vertex** _obj, UINT** _indList)
+{
+	DynArray<Vertex> vertList;
+
+	Vertex* verts = *_obj;
+	UINT* inds = *_indList;
+
+	float epsilon = 0.0001f;
+
+	for (int i = 0; i < numIndices; ++i)
+	{
+		bool unique = true;
+		int location = -1;
+
+		for (int j = 0; j < vertList.size(); ++j)
+		{
+			if (
+				(abs(verts[inds[i]].pos.x - vertList[j].pos.x) < epsilon) &&
+				(abs(verts[inds[i]].pos.y - vertList[j].pos.y) < epsilon) &&
+				(abs(verts[inds[i]].pos.z - vertList[j].pos.z) < epsilon) &&
+				(abs(verts[inds[i]].normal.x - vertList[j].normal.x) < epsilon) &&
+				(abs(verts[inds[i]].normal.y - vertList[j].normal.y) < epsilon) &&
+				(abs(verts[inds[i]].normal.z - vertList[j].normal.z) < epsilon) &&
+				(abs(verts[inds[i]].uv.x - vertList[j].uv.x) < epsilon) &&
+				(abs(verts[inds[i]].uv.y - vertList[j].uv.y) < epsilon)
+				)
+			{
+				unique = false;
+				location = j;
+				break;
+			}
+		}
+		if (unique)
+		{
+			vertList.append(verts[i]);
+			inds[i] = vertList.size() - 1;
+		}
+		else
+		{
+			inds[i] = location;
+		}
+	}
+
+	//delete[] * _obj;
+	delete[] verts;
+	verts = nullptr;
+	verts = new Vertex[vertList.size()];
+
+	for (int i = 1; i < vertList.size(); ++i)
+	{
+		verts[i] = vertList[i];
+	}
+
+	*_obj = verts;
+	*_indList = inds;
+	numVertices = vertList.size();
 }
 
 
@@ -620,11 +684,30 @@ void LetsDrawSomeStuff::Render()
 			const float black[] = { 0,0,0,1 };
 			myContext->ClearRenderTargetView(myRenderTargetView, black);
 
+			//set up lighting data
+			XMFLOAT4 LightingDirs[2] =
+			{
+				XMFLOAT4(0.577f, 0.577f, -0.577f, 1.0f),
+				XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+			};
+
+			XMFLOAT4 LightingColors[2] =
+			{
+				XMFLOAT4(0.753f, 0.753f, 0.9451f, 1.0f),
+				XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f)
+			};
+
 			//update constant buffer
 			ConstantBuffer conBuff;
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
+			for (int i = 0; i < 2; ++i)
+			{
+				conBuff.LightColor[i] = LightingColors[i];
+				conBuff.LightDir[i] = LightingDirs[i];
+			}
+			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
@@ -660,6 +743,7 @@ void LetsDrawSomeStuff::Render()
 
 			//Draw (nothing actually happens until draw is called)
 			myContext->DrawIndexed(numIndices, 0, 0);
+			//myContext->Draw(numVertices, 0);
 
 			/////////////////////////////////////////////////////////////////////////////
 

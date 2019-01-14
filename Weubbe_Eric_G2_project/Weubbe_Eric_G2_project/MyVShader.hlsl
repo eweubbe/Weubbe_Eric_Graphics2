@@ -6,11 +6,16 @@
 // 2) input layout
 // 3) HLSL Vertex struct
 
+//#pragma pack_matrix( row_major )
+
 cbuffer ConstantBuffer : register(b0)
 {
 	matrix world;
 	matrix view;
 	matrix projection;
+	float4 lightDir[2];
+	float4 lightCol[2];
+	float4 outputCol;
 }
 
 struct InputVertex
@@ -38,7 +43,9 @@ PSVertex main(InputVertex _input)
 	output.pos = mul(output.pos, projection);
 
 	//lighting
-	output.normal = _input.normal;
+	_input.normal.w = 1.0f;
+	output.normal = mul(_input.normal, world);
+	
 
 	//texture
 	output.uv = _input.uv;
