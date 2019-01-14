@@ -11,9 +11,10 @@
 #include<iostream>
 #include<fstream>
 #include"DynArray.h"
+#include"DDSTextureLoader.h"
 
 //texture includes
-#include "t_DeadTree.h"
+//#include "t_DeadTree.h"
 
 //include compiled shaders
 #include "myVShader.csh"
@@ -52,7 +53,6 @@ class LetsDrawSomeStuff
 	//texture variables
 	ID3D11Texture2D* treeTex = nullptr; //what we load pixel data into
 	ID3D11ShaderResourceView* treeView = nullptr;
-	//ID3D11Resource* treeResource;
 
 	//matrices
 	XMMATRIX worldM;
@@ -145,39 +145,45 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//*********************************************
 
 			//load texture data onto vRAM**************************
-			D3D11_TEXTURE2D_DESC texDesc;
-			D3D11_SUBRESOURCE_DATA texSrc[t_DeadTree_numlevels];
-			ZeroMemory(&texDesc, sizeof(texDesc));
 
-			texDesc.ArraySize = 1; // how many textures to load in
-			texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; //want to use the texture in a shader
-			texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-			texDesc.Height = t_DeadTree_height;
-			texDesc.Width = t_DeadTree_width;
-			texDesc.MipLevels = t_DeadTree_numlevels;
-			texDesc.Usage = D3D11_USAGE_IMMUTABLE;
-			texDesc.SampleDesc.Count = 1;
+			//RAW DD3 WAY
+			//////D3D11_TEXTURE2D_DESC texDesc;
+			//////D3D11_SUBRESOURCE_DATA texSrc[t_DeadTree_numlevels];
+			//////ZeroMemory(&texDesc, sizeof(texDesc));
 
-			// each mip level needs its own SRD
-			for (int i = 0; i < t_DeadTree_numlevels; ++i)
-			{
-				ZeroMemory(&texSrc[i], sizeof(texSrc[i]));
-				texSrc[i].pSysMem = &t_DeadTree_pixels[t_DeadTree_leveloffsets[i]];
-				texSrc[i].SysMemPitch = (t_DeadTree_width >> i) * sizeof(UINT);
-			}
-			
+			//////texDesc.ArraySize = 1; // how many textures to load in
+			//////texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; //want to use the texture in a shader
+			//////texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+			//////texDesc.Height = t_DeadTree_height;
+			//////texDesc.Width = t_DeadTree_width;
+			//////texDesc.MipLevels = t_DeadTree_numlevels;
+			//////texDesc.Usage = D3D11_USAGE_IMMUTABLE;
+			//////texDesc.SampleDesc.Count = 1;
 
-			hr = myDevice->CreateTexture2D(&texDesc, texSrc, &treeTex);
+			//////// each mip level needs its own SRD
+			//////for (int i = 0; i < t_DeadTree_numlevels; ++i)
+			//////{
+			//////	ZeroMemory(&texSrc[i], sizeof(texSrc[i]));
+			//////	texSrc[i].pSysMem = &t_DeadTree_pixels[t_DeadTree_leveloffsets[i]];
+			//////	texSrc[i].SysMemPitch = (t_DeadTree_width >> i) * sizeof(UINT);
+			//////}
+			//////
 
-			//shader resource veiw creation
-			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-			ZeroMemory(&srvDesc, sizeof(srvDesc));
-			srvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-			srvDesc.Texture2D.MipLevels = t_DeadTree_numlevels;
-			srvDesc.Texture2D.MostDetailedMip = 0;
+			//////hr = myDevice->CreateTexture2D(&texDesc, texSrc, &treeTex);
 
-			hr = myDevice->CreateShaderResourceView(treeTex, &srvDesc, &treeView);
+			////////shader resource veiw creation
+			//////D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+			//////ZeroMemory(&srvDesc, sizeof(srvDesc));
+			//////srvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+			//////srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			//////srvDesc.Texture2D.MipLevels = t_DeadTree_numlevels;
+			//////srvDesc.Texture2D.MostDetailedMip = 0;
+
+			//////hr = myDevice->CreateShaderResourceView(treeTex, &srvDesc, &treeView);
+
+			//dds loader way
+			hr = CreateDDSTextureFromFile(myDevice, L"t_DeadTree.dds", (ID3D11Resource**)&treeTex, &treeView);
+
 			//*********************************************
 
 			D3D11_BUFFER_DESC bDesc;
@@ -468,7 +474,27 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 				
 			}
 		}
-		
+
+		//store the number of indices read in
+		numIndices = indexIn.size();
+		numVertices = 0;
+		//temporary vertex and index array
+		Vertex* verts = new Vertex[numIndices];
+		UINT* inds = new UINT[numIndices];
+		//populate new vertex array with read in data
+		for (int i = 0; i < numIndices; ++i)
+		{
+			verts[i].pos = posIn[indexIn[i].x];
+			verts[i].uv = texIn[indexIn[i].y];
+			verts[i].normal = normIn[indexIn[i].z];
+
+			inds[i] = i;
+
+			//temporary
+			verts[i].color = RAND_COLOR;
+			++numVertices;
+		}
+
 		//debugging output
 		if (_DEBUG)
 		{
@@ -492,26 +518,20 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			{
 				cout << normIn[i].x << ' ' << normIn[i].y << ' ' << normIn[i].z << '\n';
 			}*/
-		}
 
-		//store the number of indices read in
-		numIndices = indexIn.size();
-		numVertices = 0;
-		//temporary vertex and index array
-		Vertex* verts = new Vertex[numIndices];
-		UINT* inds = new UINT[numIndices];
-		//populate new vertex array with read in data
-		for (int i = 0; i < numIndices; ++i)
-		{
-			verts[i].pos = posIn[indexIn[i].x];
-			verts[i].uv = texIn[indexIn[i].y];
-			verts[i].normal = normIn[indexIn[i].z];
+			//cout << "Index (pos tex norm)\n";
+			//for (int i = 0; i < indexIn.size(); ++i)
+			//{
+			//	cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' '<< indexIn[i].z + 1 << '\n';
+			//}
 
-			inds[i] = i;
-
-			//temporary
-			verts[i].color = RAND_COLOR;
-			++numVertices;
+			//FINAL VERT ARRAY
+			/*cout << "Vertex Data\n";
+			for (int i = 0; i < numIndices; ++i)
+			{
+				cout << "Vertex " << i << ': ' << "Pos: " << verts[i].pos.x << ' ' << verts[i].pos.y << ' ' << verts[i].pos.z <<
+					" UV: " << verts[i].uv.x << ' ' << verts[i].uv.y << " Norm: " << verts[i].normal.x << ' ' << verts[i].normal.y << ' ' <<verts[i].normal.z << '\n';
+			}*/
 		}
 
 		//assign temp vert array to array param

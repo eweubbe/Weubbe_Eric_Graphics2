@@ -115,12 +115,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DynArray.h" />
     <ClInclude Include="LetsDrawSomeStuff.h" />
-    <ClInclude Include="t_DeadTree.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Gateware Redistribution R5d\Source\G_Audio\GAudio.cpp" />
     <ClCompile Include="Gateware Redistribution R5d\Source\G_Graphics\GDirectX11Surface.cpp" />
     <ClCompile Include="Gateware Redistribution R5d\Source\G_Graphics\GOpenGLSurface.cpp" />
