@@ -5,6 +5,7 @@
 
 // Include DirectX11 for interface access
 #include <d3d11.h>
+//#define _XM_NO_INTRINSICS_
 #include <DirectXMath.h>
 #include <directxcolors.h>
 #include"XTime.h"
@@ -676,6 +677,38 @@ void LetsDrawSomeStuff::Render()
 			if (rotationDegree >= 360)
 				rotationDegree = 0;
 			deltaT -= deltaT;
+			
+			XMMATRIX viewCpy = viewM;
+
+			//Get User Input and update Camera
+			if (GetAsyncKeyState('W') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.1f),viewCpy);
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
+			else if (GetAsyncKeyState('S') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.1f), viewCpy);
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
+			else if (GetAsyncKeyState('A') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.1f, 0.0f, 0.0f), viewCpy);
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
+			else if (GetAsyncKeyState('D') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
 		}
 
 		//rotate object
