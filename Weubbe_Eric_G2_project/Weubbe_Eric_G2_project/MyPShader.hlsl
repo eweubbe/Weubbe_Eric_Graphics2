@@ -23,7 +23,7 @@ SamplerState treeFilter : register(s0); //default provided does clamping an bili
 
 float4 main(PSVertex _input) : SV_TARGET
 {
-	//float4 color = 0;
+	float4 color = float4(0,0,0,0);
 
 	//color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 
@@ -31,6 +31,12 @@ float4 main(PSVertex _input) : SV_TARGET
 
 	//return color *= _input.color;
 
-	return tree.Sample(treeFilter, _input.uv);
+	 color += tree.Sample(treeFilter, _input.uv);
+	 if (color.w == 0)
+	 {
+		 discard;
+	 }
+	 return color;
+
 	//return _input.color; 
 }
