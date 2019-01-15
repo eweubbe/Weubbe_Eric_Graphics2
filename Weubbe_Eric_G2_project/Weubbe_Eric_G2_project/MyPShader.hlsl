@@ -3,7 +3,7 @@ struct PSVertex
 {
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
-	float2 uv : TEXCOORD0;
+	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
 };
 
@@ -23,9 +23,9 @@ SamplerState treeFilter : register(s0); //default provided does clamping an bili
 
 float4 main(PSVertex _input) : SV_TARGET
 {
-	float4 color = 0;
+	//float4 color = 0;
 
-	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
+	//color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 
 	//color *= tree.Sample(treeFilter, _input.uv);
 

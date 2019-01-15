@@ -458,12 +458,13 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			{
 				XMFLOAT2 uv;
 				inFile >> uv.x >> uv.y;
+				uv.y = abs(1.0f - uv.y);
 				texIn.append(uv);
 			}
 			else if (0 == strcmp(buffer, "vn"))
 			{
 				XMFLOAT4 xyzw;
-				xyzw.w = 0.0f;
+				xyzw.w = 1.0f;
 				inFile >> xyzw.x >> xyzw.y >> xyzw.z;
 				normIn.append(xyzw);
 			}
@@ -521,11 +522,11 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			}*/
 
 			//print read in textures
-			cout << "Textures (u v)\n";
+			/*cout << "Textures (u v)\n";
 			for (int i = 0; i < texIn.size(); ++i)
 			{
 				cout << texIn[i].x << ' ' << texIn[i].y << '\n';
-			}
+			}*/
 
 			//print read in normals
 			/*cout << "Normals (x y z)\n";
@@ -540,13 +541,26 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			//	cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' '<< indexIn[i].z + 1 << '\n';
 			//}
 
+			float epsilon = 0.00001f;
+
 			//FINAL VERT ARRAY
-			/*cout << "Vertex Data\n";
+			cout << "Vertex Data\n";
 			for (int i = 0; i < numIndices; ++i)
 			{
-				cout << "Vertex " << i << ': ' << "Pos: " << verts[i].pos.x << ' ' << verts[i].pos.y << ' ' << verts[i].pos.z <<
-					" UV: " << verts[i].uv.x << ' ' << verts[i].uv.y << " Norm: " << verts[i].normal.x << ' ' << verts[i].normal.y << ' ' <<verts[i].normal.z << '\n';
-			}*/
+				if ((abs(verts[i].normal.x - (-0.757055000f)) < epsilon) && (abs(verts[i].normal.y - (0.070595000)) < epsilon) && (abs(verts[i].normal.z - (-0.649526000)) < epsilon))
+				{
+					cout << "Vertex " << i << ': ' << "Pos: " << verts[i].pos.x << ' ' << verts[i].pos.y << ' ' << verts[i].pos.z <<
+						" UV: " << verts[i].uv.x << ' ' << verts[i].uv.y <<
+						" Norm: " << verts[i].normal.x << ' ' << verts[i].normal.y << ' ' << verts[i].normal.z << '\n';
+
+					cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' ' << indexIn[i].z + 1 << '\n';
+
+				}
+			}
+			cout << posIn[178].x << ' ' << posIn[178].y << ' ' << posIn[178].z << '\n';
+			cout << texIn[201].x << ' ' << texIn[201].y << '\n';
+			cout << normIn[362].x << ' ' << normIn[362].y << ' ' << normIn[362].z << '\n';
+			
 		}
 
 		//assign temp vert array to array param
