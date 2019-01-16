@@ -19,6 +19,7 @@
 //include compiled shaders
 #include "myVShader.csh"
 #include "myPShader.csh"
+#include "PSSOLID.csh"
 
 using namespace DirectX;
 using namespace std;
@@ -52,6 +53,7 @@ class LetsDrawSomeStuff
 	//shader variables
 	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
 	ID3D11PixelShader* pShader = nullptr; //HLSL
+	ID3D11PixelShader* pSolid = nullptr;
 
 	//texture variables
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -203,7 +205,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			for (int i = 0; i < NUM_OBJECTS; ++i)
 			{
 				bDesc.ByteWidth = sizeof(UINT) * indNums[i];
-				subData.pSysMem = indices[0];
+				subData.pSysMem = indices[i];
 				hr = myDevice->CreateBuffer(&bDesc, &subData, &iBuffer[i]);
 			}
 
@@ -232,6 +234,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//SHADERS********************************************************************************
 			hr = myDevice->CreateVertexShader(MyVShader, sizeof(MyVShader), nullptr, &vShader);
 			hr = myDevice->CreatePixelShader(MyPShader, sizeof(MyPShader), nullptr, &pShader);
+			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -626,6 +629,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	vLayout->Release();
 	vShader->Release();
 	pShader->Release();
+	pSolid->Release();
 	treeTex->Release();
 	treeView->Release();
 	SamplerLinear->Release();
@@ -788,17 +792,23 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
 			
-
 			//Draw (nothing actually happens until draw is called)
 			myContext->DrawIndexed(indNums[0], 0, 0);
 
-			//draw cube
-			/*worldM = XMMatrixMultiply(worldM, XMMatrixTranslation(5.0f, 0.0f, 5.0f));
+			////draw cube
+			worldM = XMMatrixMultiply(worldM, XMMatrixTranslation(5.0f, 0.0f, 5.0f));
 			conBuff.world = XMMatrixTranspose(worldM);
-			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);*/
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[1];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetShader(vShader, 0, 0);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->DrawIndexed(indNums[1], 0, 0);
 			
-
-
 			/////////////////////////////////////////////////////////////////////////////
 
 			// Present Backbuffer using Swapchain object
@@ -808,6 +818,7 @@ void LetsDrawSomeStuff::Render()
 			//reset view matrix
 			viewDet = XMMatrixDeterminant(viewM);
 			viewM = XMMatrixInverse(&viewDet, viewM);
+			worldM = XMMatrixIdentity();
 
 			// Free any temp DX handles aquired this frame
 			myRenderTargetView->Release();

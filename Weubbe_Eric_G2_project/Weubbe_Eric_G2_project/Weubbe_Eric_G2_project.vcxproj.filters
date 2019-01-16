@@ -65,6 +65,9 @@
     <FxCompile Include="MyPShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PSSOLID.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LetsDrawSomeStuff.h">
