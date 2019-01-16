@@ -715,7 +715,7 @@ void LetsDrawSomeStuff::Render()
 		}
 
 		//rotate object
-		//worldM = XMMatrixRotationY(rotationDegree);
+		worldM = XMMatrixRotationY(rotationDegree);
 		viewDet = XMMatrixDeterminant(viewCpy);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
@@ -782,8 +782,9 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
 
 			//vertex shader stage
-			myContext->VSSetShader(vShader, 0, 0);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			
 
 			//pixel shader stage
 			ID3D11ShaderResourceView* srvs[] = { treeView };
@@ -796,15 +797,17 @@ void LetsDrawSomeStuff::Render()
 			myContext->DrawIndexed(indNums[0], 0, 0);
 
 			////draw cube
-			worldM = XMMatrixMultiply(worldM, XMMatrixTranslation(5.0f, 0.0f, 5.0f));
+			XMMATRIX worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 0.0f, 3.0f));
+			worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[1];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
 			myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			myContext->VSSetShader(vShader, 0, 0);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
