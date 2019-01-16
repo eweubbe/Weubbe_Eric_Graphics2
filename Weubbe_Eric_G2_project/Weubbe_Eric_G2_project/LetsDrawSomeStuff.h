@@ -16,9 +16,6 @@
 #include"Gateware Redistribution R5d/Interface/G_System/GKeyDefines.h"
 #include"Gateware Redistribution R5d/Interface/G_System/GInput.h"
 
-//texture includes
-//#include "t_DeadTree.h"
-
 //include compiled shaders
 #include "myVShader.csh"
 #include "myPShader.csh"
@@ -26,9 +23,10 @@
 using namespace DirectX;
 using namespace std;
 
-//funtime random color 
+//Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
+#define NUM_OBJECTS 2
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -86,10 +84,10 @@ class LetsDrawSomeStuff
 		XMFLOAT4 OutputColor;
 	};
 
-	Vertex* obj1 = nullptr;
-	int numVertices = 0;
-	UINT* indices = nullptr;
-	int numIndices = 0;
+	Vertex* objs[NUM_OBJECTS];
+	int vertNums[NUM_OBJECTS];
+	UINT* indices[NUM_OBJECTS];
+	int indNums[NUM_OBJECTS];
 	float modelScale = 0.5f;
 
 	//timer variables
@@ -102,12 +100,14 @@ class LetsDrawSomeStuff
 	
 	//Test Functions
 	//fills array with appropriate vertex info to draw a test triangle
-	void Triangle(Vertex** _obj);
+	//void Triangle(Vertex** _obj);
 	//fills array with appropriate vertex info to draw a test cube
-	void Cube(Vertex** _obj);
+	//void Cube(Vertex** _obj);
+	//procedurally generated grid function
+	void Grid(Vertex** _obj, UINT** _indList);
 	
 	//process vertex information from OBJ file
-	void LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList);
+	void LoadOBJVerts(const char* _filename, UINT _arrPos);
 	void Compactify(Vertex** _obj, UINT** _indList);
 
 
@@ -160,7 +160,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//LOAD OBJECT ONTO THE VIDEO CARD////////////////////////////////////
 			
 			//Load/create meshes***************************
-			LoadOBJVerts("dead_tree1.txt", &obj1, &indices);
+			LoadOBJVerts("dead_tree1.txt", 0);
 			//*********************************************
 
 			//load texture data onto vRAM**************************
@@ -223,7 +223,12 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//VERTEX BUFFER
 			//set up buffer description
 			bDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			bDesc.ByteWidth = sizeof(Vertex) * numVertices;
+			bDesc.ByteWidth = sizeof(Vertex) * vertNums[0];
+			/*for (int i = 0; i < NUM_OBJECTS; ++i)
+			{
+				bDesc.ByteWidth += sizeof(Vertex) * vertNums[i];
+			}*/
+			
 			bDesc.CPUAccessFlags = 0;
 			bDesc.MiscFlags = 0;
 			bDesc.StructureByteStride = 0;
@@ -231,15 +236,19 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 
 			//set up subdata
-			subData.pSysMem = obj1;
+			subData.pSysMem = objs[0];
 
 			//create vertex buffer
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &vBuffer);
 
 			//INDEX BUFFER
-			bDesc.ByteWidth = sizeof(UINT) * numIndices;
+			/*for (int i = 0; i < NUM_OBJECTS; ++i)
+			{
+				bDesc.ByteWidth += sizeof(UINT) * indNums[i];
+			}*/
+			bDesc.ByteWidth = sizeof(UINT) * indNums[0];
 			bDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			subData.pSysMem = indices;
+			subData.pSysMem = indices[0];
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &iBuffer);
 
 			//CONSTANT BUFFER
@@ -301,147 +310,147 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 }
 
 //fills array with appropriate vertex info to draw a test triangle
-void LetsDrawSomeStuff::Triangle(Vertex** _obj)
-{
-	Vertex* temp;
-	temp = new Vertex[3];
-	temp[0].pos.x = 0;
-	temp[0].pos.y = 0.5f;
-	temp[0].pos.z = 0;
-	temp[0].pos.w = 1;
-	temp[0].color.x = 1;
-	temp[0].color.y = 1;
-	temp[0].color.z = 1;
-	temp[0].color.w = 1;
-	temp[0].uv.x = 0;
-	temp[0].uv.y = 0;
-
-	temp[1].pos.x = 0.5f;
-	temp[1].pos.y = -0.5f;
-	temp[1].pos.z = 0;
-	temp[1].pos.w = 1;
-	temp[1].color.x = 1;
-	temp[1].color.y = 1;
-	temp[1].color.z = 1;
-	temp[1].color.w = 1;
-	temp[1].uv.x = 0;
-	temp[1].uv.y = 0;
-
-	temp[2].pos.x = -0.5f;
-	temp[2].pos.y = -0.5f;
-	temp[2].pos.z = 0;
-	temp[2].pos.w = 1;
-	temp[2].color.x = 1;
-	temp[2].color.y = 1;
-	temp[2].color.z = 1;
-	temp[2].color.w = 1;
-	temp[2].uv.x = 0;
-	temp[2].uv.y = 0;
-
-	*_obj = temp;
-
-	numVertices = 3;
-}
+//void LetsDrawSomeStuff::Triangle(Vertex** _obj)
+//{
+//	Vertex* temp;
+//	temp = new Vertex[3];
+//	temp[0].pos.x = 0;
+//	temp[0].pos.y = 0.5f;
+//	temp[0].pos.z = 0;
+//	temp[0].pos.w = 1;
+//	temp[0].color.x = 1;
+//	temp[0].color.y = 1;
+//	temp[0].color.z = 1;
+//	temp[0].color.w = 1;
+//	temp[0].uv.x = 0;
+//	temp[0].uv.y = 0;
+//
+//	temp[1].pos.x = 0.5f;
+//	temp[1].pos.y = -0.5f;
+//	temp[1].pos.z = 0;
+//	temp[1].pos.w = 1;
+//	temp[1].color.x = 1;
+//	temp[1].color.y = 1;
+//	temp[1].color.z = 1;
+//	temp[1].color.w = 1;
+//	temp[1].uv.x = 0;
+//	temp[1].uv.y = 0;
+//
+//	temp[2].pos.x = -0.5f;
+//	temp[2].pos.y = -0.5f;
+//	temp[2].pos.z = 0;
+//	temp[2].pos.w = 1;
+//	temp[2].color.x = 1;
+//	temp[2].color.y = 1;
+//	temp[2].color.z = 1;
+//	temp[2].color.w = 1;
+//	temp[2].uv.x = 0;
+//	temp[2].uv.y = 0;
+//
+//	*_obj = temp;
+//
+//	//numVertices = 3;
+//}
 
 //fills array with appropriate vertex info to draw a test cube
-void LetsDrawSomeStuff::Cube(Vertex** _obj)
-{
-	//XMFLOAT4 CubeColor = { rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f };
-	XMFLOAT4 CubeColor = RAND_COLOR;
-	Vertex* temp;
-	//temp = new Vertex[36];
-
-	////front of cube 0-5
-	//temp[0] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
-	//temp[1] = { XMFLOAT4(-0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
-	//temp[2] = { XMFLOAT4(0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 0.0f) };
-	//temp[3] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 1.0f) };
-	//temp[4] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
-	//temp[5] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
-
-	//	//right side of cube 6-11
-	//temp[6] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[7] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[8] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	//temp[9] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	//temp[10] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	//temp[11] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-
-	//	//back of cube 12-17
-	//temp[12] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[13] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[14] = { XMFLOAT4(-0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	//temp[15] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	//temp[16] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	//temp[17] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-
-	//	//left side of cube 18-23
-	//temp[18] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[19] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[20] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	//temp[21] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	//temp[22] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	//temp[23] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-
-	//	//top of cube 24-29
-	//temp[24] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[25] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[26] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	//temp[27] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	//temp[28] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	//temp[29] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-
-	//	//bottom of cube 30-35
-	//temp[30] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[31] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
-	//temp[32] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
-	//temp[33] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
-	//temp[34] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-	//temp[35] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
-
-	temp = new Vertex[8];
-	
-	temp[0] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[1] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[2] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[3] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	
-	temp[4] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[5] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[6] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[7] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-
-	for (int i = 0; i < 8; ++i)
-	{
-		temp[i].color = RAND_COLOR;
-	}
-
-	
-
-	indices = new UINT[36] 
-	{
-		0,1,3,
-		3,1,2,
-		0,4,5,
-		0,5,1,
-		1,5,2,
-		2,5,6,
-		4,0,7,
-		7,0,3,
-		7,3,2,
-		7,2,6,
-		5,4,6,
-		6,4,7
-	};
-
-	numIndices = 36;
-
-	numVertices = 8;
-	*_obj = temp;
-}
+//void LetsDrawSomeStuff::Cube(Vertex** _obj)
+//{
+//	//XMFLOAT4 CubeColor = { rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f };
+//	XMFLOAT4 CubeColor = RAND_COLOR;
+//	Vertex* temp;
+//	//temp = new Vertex[36];
+//
+//	////front of cube 0-5
+//	//temp[0] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
+//	//temp[1] = { XMFLOAT4(-0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 0.0f) };
+//	//temp[2] = { XMFLOAT4(0.25f,  0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 0.0f) };
+//	//temp[3] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(0.0f, 1.0f) };
+//	//temp[4] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
+//	//temp[5] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor, XMFLOAT2(1.0f, 1.0f) };
+//
+//	//	//right side of cube 6-11
+//	//temp[6] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[7] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[8] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+//	//temp[9] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+//	//temp[10] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//	//temp[11] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//
+//	//	//back of cube 12-17
+//	//temp[12] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[13] = { XMFLOAT4(0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[14] = { XMFLOAT4(-0.25f,  0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+//	//temp[15] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+//	//temp[16] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//	//temp[17] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//
+//	//	//left side of cube 18-23
+//	//temp[18] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[19] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[20] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+//	//temp[21] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+//	//temp[22] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//	//temp[23] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//
+//	//	//top of cube 24-29
+//	//temp[24] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[25] = { XMFLOAT4(-0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[26] = { XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+//	//temp[27] = { XMFLOAT4(-0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+//	//temp[28] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//	//temp[29] = { XMFLOAT4(0.25f, 0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//
+//	//	//bottom of cube 30-35
+//	//temp[30] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[31] = { XMFLOAT4(-0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 0.0f) };
+//	//temp[32] = { XMFLOAT4(0.25f, -0.25f, 0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 0.0f) };
+//	//temp[33] = { XMFLOAT4(-0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(0.0f, 1.0f) };
+//	//temp[34] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//	//temp[35] = { XMFLOAT4(0.25f, -0.25f, -0.25f, 1.0f), CubeColor,  XMFLOAT2(1.0f, 1.0f) };
+//
+//	temp = new Vertex[8];
+//	
+//	temp[0] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[1] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[2] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[3] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	
+//	temp[4] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[5] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[6] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//	temp[7] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+//
+//	for (int i = 0; i < 8; ++i)
+//	{
+//		temp[i].color = RAND_COLOR;
+//	}
+//
+//	
+//
+//	indices = new UINT[36] 
+//	{
+//		0,1,3,
+//		3,1,2,
+//		0,4,5,
+//		0,5,1,
+//		1,5,2,
+//		2,5,6,
+//		4,0,7,
+//		7,0,3,
+//		7,3,2,
+//		7,2,6,
+//		5,4,6,
+//		6,4,7
+//	};
+//
+//	numIndices = 36;
+//
+//	numVertices = 8;
+//	*_obj = temp;
+//}
 
 //process vertex information from OBJ file
-void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT** _indList)
+void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 {
 	// set up output console for debugging
 	AllocConsole();
@@ -513,13 +522,13 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 		}
 
 		//store the number of indices read in
-		numIndices = indexIn.size();
-		numVertices = 0;
+		indNums[_arrPos] = indexIn.size();
+		vertNums[_arrPos] = 0;
 		//temporary vertex and index array
-		Vertex* verts = new Vertex[numIndices];
-		UINT* inds = new UINT[numIndices];
+		Vertex* verts = new Vertex[indNums[_arrPos]];
+		UINT* inds = new UINT[indNums[_arrPos]];
 		//populate new vertex array with read in data
-		for (int i = 0; i < numIndices; ++i)
+		for (int i = 0; i < indNums[_arrPos]; ++i)
 		{
 			verts[i].pos = posIn[indexIn[i].x];
 			verts[i].uv = texIn[indexIn[i].y];
@@ -529,7 +538,7 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 
 			//temporary
 			verts[i].color = RAND_COLOR;
-			++numVertices;
+			++vertNums[_arrPos];
 		}
 
 		//debugging output
@@ -565,8 +574,8 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			float epsilon = 0.00001f;
 
 			//FINAL VERT ARRAY
-			cout << "Vertex Data\n";
-			for (int i = 0; i < numIndices; ++i)
+			/*cout << "Vertex Data\n";
+			for (int i = 0; i < indexIn.size(); ++i)
 			{
 				if ((abs(verts[i].normal.x - (-0.757055000f)) < epsilon) && (abs(verts[i].normal.y - (0.070595000)) < epsilon) && (abs(verts[i].normal.z - (-0.649526000)) < epsilon))
 				{
@@ -580,76 +589,76 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, Vertex** _obj, UINT*
 			}
 			cout << posIn[178].x << ' ' << posIn[178].y << ' ' << posIn[178].z << '\n';
 			cout << texIn[201].x << ' ' << texIn[201].y << '\n';
-			cout << normIn[362].x << ' ' << normIn[362].y << ' ' << normIn[362].z << '\n';
+			cout << normIn[362].x << ' ' << normIn[362].y << ' ' << normIn[362].z << '\n';*/
 			
 		}
 
 		//assign temp vert array to array param
-		*_obj = verts;
-		*_indList = inds;
+		objs[_arrPos] = verts;
+		indices[_arrPos] = inds;
 
 		//Compactify(_obj, _indList);
 	}
 	inFile.close();
 }
 
-void LetsDrawSomeStuff::Compactify(Vertex** _obj, UINT** _indList)
-{
-	DynArray<Vertex> vertList;
-
-	Vertex* verts = *_obj;
-	UINT* inds = *_indList;
-
-	float epsilon = 0.0001f;
-
-	for (int i = 0; i < numIndices; ++i)
-	{
-		bool unique = true;
-		int location = -1;
-
-		for (int j = 0; j < vertList.size(); ++j)
-		{
-			if (
-				(abs(verts[inds[i]].pos.x - vertList[j].pos.x) < epsilon) &&
-				(abs(verts[inds[i]].pos.y - vertList[j].pos.y) < epsilon) &&
-				(abs(verts[inds[i]].pos.z - vertList[j].pos.z) < epsilon) &&
-				(abs(verts[inds[i]].normal.x - vertList[j].normal.x) < epsilon) &&
-				(abs(verts[inds[i]].normal.y - vertList[j].normal.y) < epsilon) &&
-				(abs(verts[inds[i]].normal.z - vertList[j].normal.z) < epsilon) &&
-				(abs(verts[inds[i]].uv.x - vertList[j].uv.x) < epsilon) &&
-				(abs(verts[inds[i]].uv.y - vertList[j].uv.y) < epsilon)
-				)
-			{
-				unique = false;
-				location = j;
-				break;
-			}
-		}
-		if (unique)
-		{
-			vertList.append(verts[i]);
-			inds[i] = vertList.size() - 1;
-		}
-		else
-		{
-			inds[i] = location;
-		}
-	}
-
-	//delete[] * _obj;
-	delete[] verts;
-	verts = nullptr;
-	verts = new Vertex[vertList.size()];
-
-	for (int i = 1; i < vertList.size(); ++i)
-	{
-		verts[i] = vertList[i];
-	}
-
-	*_obj = verts;
-	*_indList = inds;
-	numVertices = vertList.size();
-}
+//void LetsDrawSomeStuff::Compactify(Vertex** _obj, UINT** _indList)
+//{
+//	DynArray<Vertex> vertList;
+//
+//	Vertex* verts = *_obj;
+//	UINT* inds = *_indList;
+//
+//	float epsilon = 0.0001f;
+//
+//	for (int i = 0; i < numIndices; ++i)
+//	{
+//		bool unique = true;
+//		int location = -1;
+//
+//		for (int j = 0; j < vertList.size(); ++j)
+//		{
+//			if (
+//				(abs(verts[inds[i]].pos.x - vertList[j].pos.x) < epsilon) &&
+//				(abs(verts[inds[i]].pos.y - vertList[j].pos.y) < epsilon) &&
+//				(abs(verts[inds[i]].pos.z - vertList[j].pos.z) < epsilon) &&
+//				(abs(verts[inds[i]].normal.x - vertList[j].normal.x) < epsilon) &&
+//				(abs(verts[inds[i]].normal.y - vertList[j].normal.y) < epsilon) &&
+//				(abs(verts[inds[i]].normal.z - vertList[j].normal.z) < epsilon) &&
+//				(abs(verts[inds[i]].uv.x - vertList[j].uv.x) < epsilon) &&
+//				(abs(verts[inds[i]].uv.y - vertList[j].uv.y) < epsilon)
+//				)
+//			{
+//				unique = false;
+//				location = j;
+//				break;
+//			}
+//		}
+//		if (unique)
+//		{
+//			vertList.append(verts[i]);
+//			inds[i] = vertList.size() - 1;
+//		}
+//		else
+//		{
+//			inds[i] = location;
+//		}
+//	}
+//
+//	//delete[] * _obj;
+//	delete[] verts;
+//	verts = nullptr;
+//	verts = new Vertex[vertList.size()];
+//
+//	for (int i = 1; i < vertList.size(); ++i)
+//	{
+//		verts[i] = vertList[i];
+//	}
+//
+//	*_obj = verts;
+//	*_indList = inds;
+//	numVertices = vertList.size();
+//}
 
 
 // Shutdown
@@ -672,8 +681,10 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	SamplerLinear->Release();
 
 	//delete dynamic memory
-	delete[] obj1;
-	delete[] indices;
+	for (int i = 0; i < NUM_OBJECTS; ++i)
+		delete objs[i];
+	for (int i = 0; i < NUM_OBJECTS; ++i)
+		delete indices[i];
 
 	if (mySurface) // Free Gateware Interface
 	{
@@ -750,7 +761,7 @@ void LetsDrawSomeStuff::Render()
 		}
 
 		//rotate object
-		//worldM = XMMatrixRotationY(rotationDegree);
+		worldM = XMMatrixRotationY(rotationDegree);
 		viewDet = XMMatrixDeterminant(viewCpy);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
@@ -829,7 +840,7 @@ void LetsDrawSomeStuff::Render()
 			
 
 			//Draw (nothing actually happens until draw is called)
-			myContext->DrawIndexed(numIndices, 0, 0);
+			myContext->DrawIndexed(indNums[0], 0, 0);
 
 			//draw another tree
 			/*worldM = XMMatrixMultiply(worldM, XMMatrixTranslation(5.0f, 0.0f, 5.0f));
