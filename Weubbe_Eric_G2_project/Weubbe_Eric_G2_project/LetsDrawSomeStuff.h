@@ -64,6 +64,7 @@ class LetsDrawSomeStuff
 	XMMATRIX worldM;
 	XMMATRIX viewM;
 	XMMATRIX projM;
+	XMVECTOR viewDet;
 
 	//contains data for a vertex
 	struct Vertex
@@ -257,6 +258,10 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//Initialize the projection matrix
 			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
+
+			//convert view matrix back to raw data
+			viewDet = XMMatrixDeterminant(viewM);
+			viewM = XMMatrixInverse(&viewDet, viewM);
 
 			////////////////////////////////////////////////////////////////////
 
@@ -685,10 +690,13 @@ void LetsDrawSomeStuff::Render()
 		timer.Signal();
 		deltaT += (float)timer.Delta();
 
+		//cursor info
 		POINT currCursorPos;
 		GetCursorPos(&currCursorPos);
 		float deltX = startingCursorPos.x - currCursorPos.x;
 		float deltY = startingCursorPos.y - currCursorPos.y;
+
+		XMMATRIX viewCpy = viewM;
 
 		if (deltaT > (1.0f / 60.0f))
 		{
@@ -697,51 +705,29 @@ void LetsDrawSomeStuff::Render()
 			if (rotationDegree >= 360)
 				rotationDegree = 0;
 			deltaT -= deltaT;
-			
-			XMMATRIX viewCpy = viewM;
 
 			//Get User Input and update Camera
 			if (GetAsyncKeyState('W') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.1f),viewCpy);
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 			else if (GetAsyncKeyState('S') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.1f), viewCpy);
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 			else if (GetAsyncKeyState('A') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.1f, 0.0f, 0.0f), viewCpy);
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 			else if (GetAsyncKeyState('D') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 			else if (GetAsyncKeyState('T') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
-				
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 			else if (GetAsyncKeyState('G') & 0x1)
 			{
-				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
-
-				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
 
 			//if ((abs(deltX) > 1))
@@ -770,6 +756,8 @@ void LetsDrawSomeStuff::Render()
 
 		//rotate object
 		worldM = XMMatrixRotationY(rotationDegree);
+		viewDet = XMMatrixDeterminant(viewCpy);
+		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
 		ID3D11RenderTargetView *myRenderTargetView = nullptr;
@@ -848,12 +836,30 @@ void LetsDrawSomeStuff::Render()
 			//Draw (nothing actually happens until draw is called)
 			myContext->DrawIndexed(numIndices, 0, 0);
 
+			//draw another tree
+			/*worldM = XMMatrixMultiply(worldM, XMMatrixTranslation(5.0f, 0.0f, 5.0f));
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pShader, 0, 0);
+			
+			myContext->DrawIndexed(numIndices, 0, 0);*/
+
 
 			/////////////////////////////////////////////////////////////////////////////
 
 			// Present Backbuffer using Swapchain object
 			// Framerate is currently unlocked, we suggest "MSI Afterburner" to track your current FPS and memory usage.
 			mySwapChain->Present(0, 0); // set first argument to 1 to enable vertical refresh sync with display
+
+			//reset view matrix
+			viewDet = XMMatrixDeterminant(viewM);
+			viewM = XMMatrixInverse(&viewDet, viewM);
 
 			// Free any temp DX handles aquired this frame
 			myRenderTargetView->Release();
