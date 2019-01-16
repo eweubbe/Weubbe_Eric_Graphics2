@@ -13,6 +13,8 @@
 #include<fstream>
 #include"DynArray.h"
 #include"DDSTextureLoader.h"
+#include"Gateware Redistribution R5d/Interface/G_System/GKeyDefines.h"
+#include"Gateware Redistribution R5d/Interface/G_System/GInput.h"
 
 //texture includes
 //#include "t_DeadTree.h"
@@ -26,12 +28,14 @@ using namespace std;
 
 //funtime random color 
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
+#define EPSILON 0.00001f
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
 {
 	// variables here
 	GW::GRAPHICS::GDirectX11Surface* mySurface = nullptr;
+	GW::SYSTEM::GInput* inputs = nullptr;
 	// Gettting these handles from GDirectX11Surface will increase their internal refrence counts, be sure to "Release()" them when done!
 	ID3D11Device *myDevice = nullptr;
 	IDXGISwapChain *mySwapChain = nullptr;
@@ -91,6 +95,9 @@ class LetsDrawSomeStuff
 	XTime timer;
 	float deltaT;
 	float rotationDegree;
+
+	//cursor detection
+	POINT startingCursorPos;
 	
 	//Test Functions
 	//fills array with appropriate vertex info to draw a test triangle
@@ -120,6 +127,11 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 		// Create surface, will auto attatch to GWindow
 		if (G_SUCCESS(GW::GRAPHICS::CreateGDirectX11Surface(attatchPoint, GW::GRAPHICS::DEPTH_BUFFER_SUPPORT, &mySurface)))
 		{
+			if (G_SUCCESS(GW::SYSTEM::CreateGInput((void*)(attatchPoint->GetWindowHandle(sizeof(HWND),nullptr)), sizeof(HWND), &inputs)))
+			{
+				float x = 1;
+			}
+
 			// Grab handles to all DX11 base interfaces
 			mySurface->GetDevice((void**)&myDevice);
 			mySurface->GetSwapchain((void**)&mySwapChain);
@@ -238,7 +250,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			worldM = XMMatrixIdentity();
 
 			//Initialize the view matrix
-			XMVECTOR Eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+			XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -10.0f, 0.0f);
 			XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			viewM = XMMatrixLookAtLH(Eye, At, Up);
@@ -274,6 +286,9 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			timer.Restart();
 			deltaT = 0;
 			rotationDegree = 0;
+
+			//set initial cursor position
+			GetCursorPos(&startingCursorPos);
 
 			
 		}
@@ -670,6 +685,11 @@ void LetsDrawSomeStuff::Render()
 		timer.Signal();
 		deltaT += (float)timer.Delta();
 
+		POINT currCursorPos;
+		GetCursorPos(&currCursorPos);
+		float deltX = startingCursorPos.x - currCursorPos.x;
+		float deltY = startingCursorPos.y - currCursorPos.y;
+
 		if (deltaT > (1.0f / 60.0f))
 		{
 			//update the degree of the object's rotation
@@ -709,6 +729,43 @@ void LetsDrawSomeStuff::Render()
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
 				viewM = XMMatrixInverse(&viewDet, viewCpy);
 			}
+			else if (GetAsyncKeyState('T') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+				
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
+			else if (GetAsyncKeyState('G') & 0x1)
+			{
+				XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+				viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+
+				viewM = XMMatrixInverse(&viewDet, viewCpy);
+			}
+
+			//if ((abs(deltX) > 1))
+			//{
+			//	XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+			//	viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+			//	XMVECTOR origPos = viewCpy.r[3]; // { viewCpy.r[0].m128_f32[0], viewCpy.r[1].m128_f32[1], viewCpy.r[2].m128_f32[2], 1.0f };
+			//	XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
+			//	//float test = viewCpy.r[0].m128_f32[0];
+			//	viewCpy.r[3] = origin;
+			//	viewCpy = XMMatrixMultiply(XMMatrixRotationY(-(deltX*0.01f)),viewCpy);
+			//	viewCpy.r[3] = origPos;
+			//	viewM = XMMatrixInverse(&viewDet, viewCpy);
+			//	startingCursorPos.x = currCursorPos.x;
+			//}
+			//if ((abs(deltY) > 1))
+			//{
+			//	XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
+			//	viewCpy = XMMatrixInverse(&viewDet, viewCpy);
+			//	viewCpy = XMMatrixMultiply(XMMatrixRotationX(-(deltY*0.01f)), viewCpy);
+			//	viewM = XMMatrixInverse(&viewDet, viewCpy);
+			//	startingCursorPos.y = currCursorPos.y;
+			//}
+			
 		}
 
 		//rotate object
@@ -734,7 +791,7 @@ void LetsDrawSomeStuff::Render()
 			//set up lighting data
 			XMFLOAT4 LightingDirs[2] =
 			{
-				XMFLOAT4(0.577f, 0.577f, -0.577f, 1.0f),
+				XMFLOAT4(0.977f, 0.777f, -0.177f, 1.0f),
 				XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
 			};
 
@@ -749,11 +806,10 @@ void LetsDrawSomeStuff::Render()
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
-			for (int i = 0; i < 2; ++i)
-			{
-				conBuff.LightColor[i] = LightingColors[i];
-				conBuff.LightDir[i] = LightingDirs[i];
-			}
+
+			conBuff.LightColor[0] = LightingColors[1];
+			conBuff.LightDir[0] = LightingDirs[0];
+			
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
@@ -785,12 +841,13 @@ void LetsDrawSomeStuff::Render()
 			ID3D11ShaderResourceView* srvs[] = { treeView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
 			
 
 			//Draw (nothing actually happens until draw is called)
 			myContext->DrawIndexed(numIndices, 0, 0);
-			//myContext->Draw(numVertices, 0);
+
 
 			/////////////////////////////////////////////////////////////////////////////
 
