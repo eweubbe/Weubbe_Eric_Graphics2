@@ -252,16 +252,16 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//Initialize the view matrix
 			XMVECTOR Eye = XMVectorSet(0.0f, 7.0f, -7.0f, 0.0f);
-			XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+			XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 			XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			viewM = XMMatrixLookAtLH(Eye, At, Up);
-
-			//Initialize the projection matrix
-			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
 
 			//convert view matrix back to raw data
 			viewDet = XMMatrixDeterminant(viewM);
 			viewM = XMMatrixInverse(&viewDet, viewM);
+
+			//Initialize the projection matrix
+			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
 
 			////////////////////////////////////////////////////////////////////
 
@@ -725,37 +725,32 @@ void LetsDrawSomeStuff::Render()
 			}
 			else if (GetAsyncKeyState('T') & 0x1)
 			{
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.1f, 0.0f));
 			}
 			else if (GetAsyncKeyState('G') & 0x1)
 			{
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.1f, 0.0f));
 			}
 
-			//if ((abs(deltX) > 1))
-			//{
-			//	XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-			//	viewCpy = XMMatrixInverse(&viewDet, viewCpy);
-			//	XMVECTOR origPos = viewCpy.r[3]; // { viewCpy.r[0].m128_f32[0], viewCpy.r[1].m128_f32[1], viewCpy.r[2].m128_f32[2], 1.0f };
-			//	XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
-			//	//float test = viewCpy.r[0].m128_f32[0];
-			//	viewCpy.r[3] = origin;
-			//	viewCpy = XMMatrixMultiply(XMMatrixRotationY(-(deltX*0.01f)),viewCpy);
-			//	viewCpy.r[3] = origPos;
-			//	viewM = XMMatrixInverse(&viewDet, viewCpy);
-			//	startingCursorPos.x = currCursorPos.x;
-			//}
-			//if ((abs(deltY) > 1))
-			//{
-			//	XMVECTOR viewDet = XMMatrixDeterminant(viewCpy);
-			//	viewCpy = XMMatrixInverse(&viewDet, viewCpy);
-			//	viewCpy = XMMatrixMultiply(XMMatrixRotationX(-(deltY*0.01f)), viewCpy);
-			//	viewM = XMMatrixInverse(&viewDet, viewCpy);
-			//	startingCursorPos.y = currCursorPos.y;
-			//}
+			if ((abs(deltX) > 1))
+			{
+				XMVECTOR origPos = viewCpy.r[3];
+				XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
+				viewCpy.r[3] = origin;
+				viewCpy = XMMatrixMultiply(viewCpy,XMMatrixRotationY(-(deltX*0.01f)));
+				viewCpy.r[3] = origPos;
+				startingCursorPos.x = currCursorPos.x;
+			}
+			/*if ((abs(deltY) > 1))
+			{
+				viewCpy = XMMatrixMultiply( XMMatrixRotationX(-(deltY*0.01f)), viewCpy);
+				startingCursorPos.y = currCursorPos.y;
+			}*/
 			
 		}
 
 		//rotate object
-		worldM = XMMatrixRotationY(rotationDegree);
+		//worldM = XMMatrixRotationY(rotationDegree);
 		viewDet = XMMatrixDeterminant(viewCpy);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
