@@ -5,6 +5,7 @@ struct PSVertex
 	float4 color : COLOR;
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
+	float3 worldPos : TEXCOORD2;
 };
 
 cbuffer ConstantBuffer : register(b0)
@@ -26,7 +27,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	float4 color = float4(0,0,0,0);
 
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
-	color = lerp(float4(0, 0, 0, 1), color, color +0.4);
+	color = lerp(float4(0, 0, 0, 1), color, color +0.05);
 	
 	color *= tree.Sample(treeFilter, _input.uv);
 	 if (color.w == 0)

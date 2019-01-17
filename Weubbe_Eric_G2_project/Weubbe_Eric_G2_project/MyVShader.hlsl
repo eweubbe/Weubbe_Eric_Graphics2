@@ -32,6 +32,7 @@ struct PSVertex
 	float4 color : COLOR;
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
+	float3 worldPos : TEXCOORD2;
 };
 
 PSVertex main(InputVertex _input)
@@ -39,6 +40,7 @@ PSVertex main(InputVertex _input)
 	PSVertex output = (PSVertex)0;
 	//position
 	output.pos = mul(_input.pos, world);
+	output.worldPos = output.pos;
 	output.pos = mul(output.pos, view);
 	output.pos = mul(output.pos, projection);
 

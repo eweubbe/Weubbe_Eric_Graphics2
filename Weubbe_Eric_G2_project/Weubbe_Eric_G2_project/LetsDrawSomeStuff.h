@@ -769,7 +769,7 @@ void LetsDrawSomeStuff::Render()
 			// Clear the screen to dark green
 			const float d_green[] = { 0, 0.5f, 0, 1 };
 			const float black[] = { 0,0,0,1 };
-			const float sky[] = { 0.0f, .302f, .4f, 1 };
+			const float sky[] = { 0.0f, 0.1f, 0.15f, 1 };
 			myContext->ClearRenderTargetView(myRenderTargetView, sky);
 
 			//set up lighting data
@@ -782,7 +782,7 @@ void LetsDrawSomeStuff::Render()
 			XMFLOAT4 LightingColors[2] =
 			{
 				XMFLOAT4(0.753f, 0.753f, 0.9451f, 1.0f),
-				XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f)
+				XMFLOAT4(0.3f, 0.4f, 0.5f, 1.0f)
 			};
 
 			//update constant buffer
