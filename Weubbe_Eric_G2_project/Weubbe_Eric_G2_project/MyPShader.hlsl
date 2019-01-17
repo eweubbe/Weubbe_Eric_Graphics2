@@ -29,8 +29,6 @@ float4 main(PSVertex _input) : SV_TARGET
 	color = lerp(float4(0, 0, 0, 1), color, color +0.4);
 	
 	color *= tree.Sample(treeFilter, _input.uv);
-	//color.a = 1;
-    //color += tree.Sample(treeFilter, _input.uv);
 	 if (color.w == 0)
 	 {
 		 discard;

@@ -55,10 +55,14 @@ class LetsDrawSomeStuff
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 	ID3D11PixelShader* pSolid = nullptr;
 
-	//texture variables
+	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
+	//tree
 	ID3D11Texture2D* treeTex = nullptr; //what we load pixel data into
 	ID3D11ShaderResourceView* treeView = nullptr;
+	//grass
+	ID3D11Texture2D* grassTex = nullptr;
+	ID3D11ShaderResourceView* grassView = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -167,7 +171,10 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//TEXTURES********************************************************************************
 			//dds loader way
+			//tree
 			hr = CreateDDSTextureFromFile(myDevice, L"t_DeadTree.dds", (ID3D11Resource**)&treeTex, &treeView);
+			//grass
+			hr = CreateDDSTextureFromFile(myDevice, L"grass_seamless.dds", (ID3D11Resource**)&grassTex, &grassView);
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -227,10 +234,10 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//convert view matrix back to raw data
 			viewDet = XMMatrixDeterminant(viewM);
 			viewM = XMMatrixInverse(&viewDet, viewM);
-			XMMATRIX viewCpy = viewM;
+			//XMMATRIX viewCpy = viewM;
 			//viewCpy = XMMatrixMultiply(XMMatrixRotationX(342.0f), viewCpy);
 			//viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 10.0f), viewCpy);
-			viewM = viewCpy;
+			//viewM = viewCpy;
 
 			//Initialize the projection matrix
 			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
@@ -659,6 +666,8 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	pSolid->Release();
 	treeTex->Release();
 	treeView->Release();
+	grassTex->Release();
+	grassView->Release();
 	SamplerLinear->Release();
 
 	//delete dynamic memory
@@ -728,26 +737,21 @@ void LetsDrawSomeStuff::Render()
 			{
 				XMVECTOR origPos = viewCpy.r[3];
 				XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
-				//XMVECTOR oriScale = { viewCpy.r[0].m128_f32[0], viewCpy.r[1].m128_f32[2], viewCpy.r[2].m128_f32[1], 1.0f };
 				viewCpy.r[3] = origin;
 				viewCpy = XMMatrixMultiply(viewCpy,XMMatrixRotationY(-(deltX*0.01f)));
-				viewCpy.r[3] = origPos;
-				/*viewCpy.r[0].m128_f32[0] = oriScale.m128_f32[0];
-				viewCpy.r[1].m128_f32[2] = oriScale.m128_f32[1];
-				viewCpy.r[2].m128_f32[1] = oriScale.m128_f32[2];*/
+				viewCpy =XMMatrixMultiply(viewCpy, XMMatrixTranslation(origPos.m128_f32[0], origPos.m128_f32[1], origPos.m128_f32[2])); 
 				startingCursorPos.x = currCursorPos.x;
 			}
-			/*if ((abs(deltY) > 1))
+			if ((abs(deltY) > 1))
 			{
 				viewCpy = XMMatrixMultiply( XMMatrixRotationX(-(deltY*0.01f)), viewCpy);
 				startingCursorPos.y = currCursorPos.y;
-			}*/
+			}
 			
 		}
 
 		//rotate object
 		worldM = XMMatrixRotationY(rotationDegree);
-		viewDet = XMMatrixDeterminant(viewCpy);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
@@ -765,7 +769,7 @@ void LetsDrawSomeStuff::Render()
 			// Clear the screen to dark green
 			const float d_green[] = { 0, 0.5f, 0, 1 };
 			const float black[] = { 0,0,0,1 };
-			const float sky[] = { .2f, .3f, .3f, 1 };
+			const float sky[] = { 0.0f, .302f, .4f, 1 };
 			myContext->ClearRenderTargetView(myRenderTargetView, sky);
 
 			//set up lighting data
@@ -834,6 +838,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
+			//geometry shader
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
@@ -850,8 +855,12 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
+			//geometry shader
+			srvs[0] = grassView;
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
 
 
