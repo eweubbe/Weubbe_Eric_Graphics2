@@ -18,8 +18,10 @@
 
 //include compiled shaders
 #include "myVShader.csh"
+#include "VS_Instanced.csh"
 #include "myPShader.csh"
 #include "PSSOLID.csh"
+
 
 using namespace DirectX;
 using namespace std;
@@ -29,6 +31,7 @@ using namespace std;
 #define EPSILON 0.00001f
 #define NUM_OBJECTS 3
 #define NUM_LIGHTS 2
+#define TREE_INSTANCES 3
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -53,6 +56,7 @@ class LetsDrawSomeStuff
 	D3D11_VIEWPORT myPort;
 	//shader variables
 	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
+	ID3D11VertexShader* InstanceVshader = nullptr;
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 	ID3D11PixelShader* pSolid = nullptr;
 
@@ -89,7 +93,8 @@ class LetsDrawSomeStuff
 		XMFLOAT4 LightDir[NUM_LIGHTS];
 		XMFLOAT4 LightColor[NUM_LIGHTS];
 		XMFLOAT4 OutputColor;
-		float pointRad;
+		float pointRad; //point light radius
+		XMMATRIX TreeInstPositions[TREE_INSTANCES]; // array of position matrices for instanced trees
 	};
 
 	Vertex* objs[NUM_OBJECTS];
@@ -105,6 +110,8 @@ class LetsDrawSomeStuff
 	//point light varis
 	XMFLOAT4 pointPos;
 	float pointLightInc;
+	//tree position matrices
+	XMMATRIX treePos[TREE_INSTANCES];
 
 	//cursor detection
 	POINT startingCursorPos;
@@ -245,10 +252,11 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//viewM = viewCpy;
 
 			//Initialize the projection matrix
-			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
+			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
 
 			//SHADERS********************************************************************************
 			hr = myDevice->CreateVertexShader(MyVShader, sizeof(MyVShader), nullptr, &vShader);
+			hr = myDevice->CreateVertexShader(VS_Instanced, sizeof(VS_Instanced), nullptr, &InstanceVshader);
 			hr = myDevice->CreatePixelShader(MyPShader, sizeof(MyPShader), nullptr, &pShader);
 			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
 
@@ -270,6 +278,11 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			rotationDegree = 0;
 			pointPos = XMFLOAT4(-5.0f, 3.0f, 6.0f, 1.0f);
 			pointLightInc = 0.1f;
+
+			//set instanced tree positions
+			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(5.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[1] = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-5.0f, 0.0f, 0.0f), XMMatrixIdentity());
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
@@ -669,6 +682,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	cBuffer->Release();
 	vLayout->Release();
 	vShader->Release();
+	InstanceVshader->Release();
 	pShader->Release();
 	pSolid->Release();
 	treeTex->Release();
@@ -720,27 +734,27 @@ void LetsDrawSomeStuff::Render()
 				pointLightInc = -pointLightInc;
 
 			//Get User Input and update Camera
-			if (GetAsyncKeyState('W') & 0x1)
+			if (GetAsyncKeyState('W') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.2f),viewCpy);
 			}
-			else if (GetAsyncKeyState('S') & 0x1)
+			else if (GetAsyncKeyState('S') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.2f), viewCpy);
 			}
-			else if (GetAsyncKeyState('A') & 0x1)
+			else if (GetAsyncKeyState('A') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.2f, 0.0f, 0.0f), viewCpy);
 			}
-			else if (GetAsyncKeyState('D') & 0x1)
+			else if (GetAsyncKeyState('D') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.2f, 0.0f, 0.0f), viewCpy);
 			}
-			else if (GetAsyncKeyState('T') & 0x1)
+			else if (GetAsyncKeyState('T') )
 			{
 				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.2f, 0.0f));
 			}
-			else if (GetAsyncKeyState('G') & 0x1)
+			else if (GetAsyncKeyState('G'))
 			{
 				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.2f, 0.0f));
 			}
@@ -808,6 +822,10 @@ void LetsDrawSomeStuff::Render()
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 10.0f;
+			for (int i = 0; i < TREE_INSTANCES; ++i)
+			{
+				conBuff.TreeInstPositions[i] = treePos[i];
+			}
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
@@ -832,13 +850,14 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetIndexBuffer(iBuffer[0], DXGI_FORMAT_R32_UINT, 0);
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->VSSetShader(vShader, 0, 0);
+			myContext->VSSetShader(InstanceVshader, 0, 0);
 			ID3D11ShaderResourceView* srvs[] = { treeView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
-			myContext->DrawIndexed(indNums[0], 0, 0);
+			//myContext->DrawIndexed(indNums[0], 0, 0);
+			myContext->DrawIndexedInstanced(indNums[0], 3, 0, 0, 0);
 
 			//draw cube
 			worldM = XMMatrixRotationY(rotationDegree);

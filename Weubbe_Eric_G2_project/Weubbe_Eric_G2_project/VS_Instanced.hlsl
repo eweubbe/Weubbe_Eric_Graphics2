@@ -1,13 +1,3 @@
-//end of day 2 videos for hlsl primer
-
-//rule of three
-// three things must match (DATA)
-// 1) C++ Vertex struct 
-// 2) input layout
-// 3) HLSL Vertex struct
-
-//#pragma pack_matrix( row_major )
-
 cbuffer ConstantBuffer : register(b0)
 {
 	matrix world;
@@ -37,11 +27,11 @@ struct PSVertex
 	float4 worldPos : TEXCOORD2;
 };
 
-PSVertex main(InputVertex _input)
+PSVertex main(InputVertex _input, uint instanceID : SV_InstanceID)
 {
 	PSVertex output = (PSVertex)0;
 	//position
-	output.pos = mul(_input.pos, world);
+	output.pos = mul(TreeInstPositions[instanceID],_input.pos);
 	output.worldPos = output.pos;
 	output.pos = mul(output.pos, view);
 	output.pos = mul(output.pos, projection);
@@ -49,11 +39,11 @@ PSVertex main(InputVertex _input)
 	//lighting
 	_input.normal.w = 1.0f;
 	output.normal = mul(_input.normal, world);
-	
+
 
 	//texture
 	output.uv = _input.uv;
-	
+
 	output.color = _input.color;
 
 	return output;

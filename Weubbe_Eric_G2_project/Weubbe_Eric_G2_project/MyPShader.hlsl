@@ -17,6 +17,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 lightCol[2];
 	float4 outputCol;
 	float pointRad;
+	matrix TreeInstPositions[3];
 }
 
 texture2D tree : register(t0);
