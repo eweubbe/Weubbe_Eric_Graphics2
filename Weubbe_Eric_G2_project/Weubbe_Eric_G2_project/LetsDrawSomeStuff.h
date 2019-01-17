@@ -27,7 +27,7 @@ using namespace std;
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
-#define NUM_OBJECTS 2
+#define NUM_OBJECTS 3
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -105,9 +105,8 @@ class LetsDrawSomeStuff
 	//void Triangle(Vertex** _obj);
 	//fills array with appropriate vertex info to draw a test cube
 	void Cube(UINT _arrPos);
-	//procedurally generated grid function
-	void Grid(UINT _arrPos);
-	
+	//generates a plane and passes it to appropriate ind and view lists
+	void Plane(UINT _arrPos);
 	//process vertex information from OBJ file
 	void LoadOBJVerts(const char* _filename, UINT _arrPos);
 	void Compactify(UINT _arrPos);
@@ -164,6 +163,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//MESHES**********************************************************************************
 			LoadOBJVerts("dead_tree1.txt", 0);
 			Cube(1);
+			Plane(2);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -219,14 +219,18 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			worldM = XMMatrixIdentity();
 
 			//Initialize the view matrix
-			XMVECTOR Eye = XMVectorSet(0.0f, 7.0f, -7.0f, 0.0f);
-			XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+			XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -10.0f, 0.0f);
+			XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			viewM = XMMatrixLookAtLH(Eye, At, Up);
 
 			//convert view matrix back to raw data
 			viewDet = XMMatrixDeterminant(viewM);
 			viewM = XMMatrixInverse(&viewDet, viewM);
+			XMMATRIX viewCpy = viewM;
+			//viewCpy = XMMatrixMultiply(XMMatrixRotationX(342.0f), viewCpy);
+			//viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 10.0f), viewCpy);
+			viewM = viewCpy;
 
 			//Initialize the projection matrix
 			projM = XMMatrixPerspectiveFovLH(XM_PIDIV2, vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
@@ -398,6 +402,29 @@ void LetsDrawSomeStuff::Cube(UINT _arrPos)
 
 	vertNums[_arrPos] = 8;
 	objs[_arrPos] = temp;
+}
+
+//generates a plane and passes it to appropriate ind and view lists
+void LetsDrawSomeStuff::Plane(UINT _arrPos)
+{
+	XMFLOAT4 color = {.5f,.5f,.5f,1.0f};
+	Vertex* temp = new Vertex[4];
+	
+
+	temp[0] = { XMFLOAT4(-10.0f, 0.0f, -10.0f, 1.0f), color, XMFLOAT2(0,0), XMFLOAT4(0,1,0,1)};
+	temp[1] = { XMFLOAT4(-10.0f, 0.0f, 10.0f, 1.0f), color, XMFLOAT2(0,1), XMFLOAT4(0,1,0,1)};
+	temp[2] = { XMFLOAT4(10.0f, 0.0f, -10.0f, 1.0f), color, XMFLOAT2(1,0), XMFLOAT4(0,1,0,1)};
+	temp[3] = { XMFLOAT4(10.0f, 0.0f, 10.0f, 1.0f), color, XMFLOAT2(1,1), XMFLOAT4(0,1,0,1) };
+
+	vertNums[_arrPos] = 4;
+	objs[_arrPos] = temp;
+
+	indices[_arrPos] = new UINT[6]
+	{
+		0,1,2,
+		2,1,3
+	};
+	indNums[_arrPos] = 6;
 }
 
 //process vertex information from OBJ file
@@ -701,9 +728,13 @@ void LetsDrawSomeStuff::Render()
 			{
 				XMVECTOR origPos = viewCpy.r[3];
 				XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
+				//XMVECTOR oriScale = { viewCpy.r[0].m128_f32[0], viewCpy.r[1].m128_f32[2], viewCpy.r[2].m128_f32[1], 1.0f };
 				viewCpy.r[3] = origin;
 				viewCpy = XMMatrixMultiply(viewCpy,XMMatrixRotationY(-(deltX*0.01f)));
 				viewCpy.r[3] = origPos;
+				/*viewCpy.r[0].m128_f32[0] = oriScale.m128_f32[0];
+				viewCpy.r[1].m128_f32[2] = oriScale.m128_f32[1];
+				viewCpy.r[2].m128_f32[1] = oriScale.m128_f32[2];*/
 				startingCursorPos.x = currCursorPos.x;
 			}
 			/*if ((abs(deltY) > 1))
@@ -734,7 +765,8 @@ void LetsDrawSomeStuff::Render()
 			// Clear the screen to dark green
 			const float d_green[] = { 0, 0.5f, 0, 1 };
 			const float black[] = { 0,0,0,1 };
-			myContext->ClearRenderTargetView(myRenderTargetView, black);
+			const float sky[] = { .2f, .3f, .3f, 1 };
+			myContext->ClearRenderTargetView(myRenderTargetView, sky);
 
 			//set up lighting data
 			XMFLOAT4 LightingDirs[2] =
@@ -754,10 +786,8 @@ void LetsDrawSomeStuff::Render()
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
-
 			conBuff.LightColor[0] = LightingColors[1];
 			conBuff.LightDir[0] = LightingDirs[0];
-			
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
@@ -777,29 +807,25 @@ void LetsDrawSomeStuff::Render()
 			ID3D11Buffer* tempVB[] = { vBuffer[0] }; // multiple buffers would be for splitting data up, i.e. separate buffers for pos and color
 			UINT strides[] = {sizeof(Vertex)}; //distance between 2 vertecies
 			UINT offsets[] = {0}; //where to start from in array
+
+			//draw tree
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
 			myContext->IASetIndexBuffer(iBuffer[0], DXGI_FORMAT_R32_UINT, 0);
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
-
-			//vertex shader stage
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			
-
-			//pixel shader stage
 			ID3D11ShaderResourceView* srvs[] = { treeView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
-			
-			//Draw (nothing actually happens until draw is called)
 			myContext->DrawIndexed(indNums[0], 0, 0);
 
-			////draw cube
+			//draw cube
 			XMMATRIX worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 0.0f, 3.0f));
-			worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
+			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
+			//worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
+			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[1];
@@ -811,6 +837,25 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
+
+			//draw plane
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[2];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[2], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->DrawIndexed(indNums[2], 0, 0);
+
+
+
 			
 			/////////////////////////////////////////////////////////////////////////////
 
