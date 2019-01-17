@@ -5,7 +5,7 @@ struct PSVertex
 	float4 color : COLOR;
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
-	float3 worldPos : TEXCOORD2;
+	float4 worldPos : TEXCOORD2;
 };
 
 cbuffer ConstantBuffer : register(b0)
@@ -16,6 +16,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 lightDir[2];
 	float4 lightCol[2];
 	float4 outputCol;
+	float pointRad;
 }
 
 texture2D tree : register(t0);
@@ -26,9 +27,19 @@ float4 main(PSVertex _input) : SV_TARGET
 {
 	float4 color = float4(0,0,0,0);
 
+	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
-	color = lerp(float4(0, 0, 0, 1), color, color +0.05);
+	//apply ambient light
+	color = lerp(float4(0, 0, 0, 1), color, color + 0.05f);
 	
+	//apply point light (light[1])
+	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
+	float lightRatio = saturate(dot(pointDir, _input.normal));
+	float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
+	color += lightCol[1] * lightRatio * atten;
+	
+	
+	//texture object
 	color *= tree.Sample(treeFilter, _input.uv);
 	 if (color.w == 0)
 	 {

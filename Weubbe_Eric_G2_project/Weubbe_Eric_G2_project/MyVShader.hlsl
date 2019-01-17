@@ -16,6 +16,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 lightDir[2];
 	float4 lightCol[2];
 	float4 outputCol;
+	float pointRad;
 }
 
 struct InputVertex
@@ -32,7 +33,7 @@ struct PSVertex
 	float4 color : COLOR;
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
-	float3 worldPos : TEXCOORD2;
+	float4 worldPos : TEXCOORD2;
 };
 
 PSVertex main(InputVertex _input)

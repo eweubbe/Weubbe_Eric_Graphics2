@@ -89,6 +89,7 @@ class LetsDrawSomeStuff
 		XMFLOAT4 LightDir[NUM_LIGHTS];
 		XMFLOAT4 LightColor[NUM_LIGHTS];
 		XMFLOAT4 OutputColor;
+		float pointRad;
 	};
 
 	Vertex* objs[NUM_OBJECTS];
@@ -711,27 +712,27 @@ void LetsDrawSomeStuff::Render()
 			//Get User Input and update Camera
 			if (GetAsyncKeyState('W') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.1f),viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.2f),viewCpy);
 			}
 			else if (GetAsyncKeyState('S') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.1f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.2f), viewCpy);
 			}
 			else if (GetAsyncKeyState('A') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.1f, 0.0f, 0.0f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.2f, 0.0f, 0.0f), viewCpy);
 			}
 			else if (GetAsyncKeyState('D') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.2f, 0.0f, 0.0f), viewCpy);
 			}
 			else if (GetAsyncKeyState('T') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.1f, 0.0f));
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.2f, 0.0f));
 			}
 			else if (GetAsyncKeyState('G') & 0x1)
 			{
-				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.1f, 0.0f));
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.2f, 0.0f));
 			}
 
 			if ((abs(deltX) > 1))
@@ -752,7 +753,7 @@ void LetsDrawSomeStuff::Render()
 		}
 
 		//rotate object
-		worldM = XMMatrixRotationY(rotationDegree);
+		//worldM = XMMatrixRotationY(rotationDegree);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
@@ -777,12 +778,12 @@ void LetsDrawSomeStuff::Render()
 			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
 				XMFLOAT4(0.3f, 0.4f, 0.5f, 1.0f),
-				XMFLOAT4(0.753f, 0.753f, 0.9451f, 1.0f)
+				XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f)
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
 				XMFLOAT4(0.777f, 0.977f, -0.177f, 1.0f),
-				XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+				XMFLOAT4(-5.0f, 3.0f, 0.0f, 1.0f)
 			};
 
 			//update constant buffer
@@ -796,6 +797,7 @@ void LetsDrawSomeStuff::Render()
 				conBuff.LightDir[i] = LightingDirs[i];
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
+			conBuff.pointRad = 10.0f;
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
@@ -829,6 +831,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->DrawIndexed(indNums[0], 0, 0);
 
 			//draw cube
+			worldM = XMMatrixRotationY(rotationDegree);
 			XMMATRIX worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
 			//worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
