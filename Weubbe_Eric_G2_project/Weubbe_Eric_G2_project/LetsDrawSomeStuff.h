@@ -102,6 +102,9 @@ class LetsDrawSomeStuff
 	XTime timer;
 	float deltaT;
 	float rotationDegree;
+	//point light varis
+	XMFLOAT4 pointPos;
+	float pointLightInc;
 
 	//cursor detection
 	POINT startingCursorPos;
@@ -265,6 +268,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			timer.Restart();
 			deltaT = 0;
 			rotationDegree = 0;
+			pointPos = XMFLOAT4(-5.0f, 3.0f, 6.0f, 1.0f);
+			pointLightInc = 0.1f;
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
@@ -709,6 +714,11 @@ void LetsDrawSomeStuff::Render()
 				rotationDegree = 0;
 			deltaT -= deltaT;
 
+			//update point light pos
+			pointPos.z -= pointLightInc;
+			if ((pointPos.z >= 6.0f) | (pointPos.z <= -6.0f))
+				pointLightInc = -pointLightInc;
+
 			//Get User Input and update Camera
 			if (GetAsyncKeyState('W') & 0x1)
 			{
@@ -783,7 +793,7 @@ void LetsDrawSomeStuff::Render()
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
 				XMFLOAT4(0.777f, 0.977f, -0.177f, 1.0f),
-				XMFLOAT4(-5.0f, 3.0f, 0.0f, 1.0f)
+				pointPos
 			};
 
 			//update constant buffer
