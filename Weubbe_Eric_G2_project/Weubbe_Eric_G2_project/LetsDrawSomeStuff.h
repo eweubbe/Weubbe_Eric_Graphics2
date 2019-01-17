@@ -28,6 +28,7 @@ using namespace std;
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
 #define NUM_OBJECTS 3
+#define NUM_LIGHTS 2
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -85,8 +86,8 @@ class LetsDrawSomeStuff
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
-		XMFLOAT4 LightDir[1];
-		XMFLOAT4 LightColor[1];
+		XMFLOAT4 LightDir[NUM_LIGHTS];
+		XMFLOAT4 LightColor[NUM_LIGHTS];
 		XMFLOAT4 OutputColor;
 	};
 
@@ -773,16 +774,15 @@ void LetsDrawSomeStuff::Render()
 			myContext->ClearRenderTargetView(myRenderTargetView, sky);
 
 			//set up lighting data
-			XMFLOAT4 LightingDirs[2] =
+			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.977f, 0.777f, -0.177f, 1.0f),
-				XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+				XMFLOAT4(0.3f, 0.4f, 0.5f, 1.0f),
+				XMFLOAT4(0.753f, 0.753f, 0.9451f, 1.0f)
 			};
-
-			XMFLOAT4 LightingColors[2] =
+			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.753f, 0.753f, 0.9451f, 1.0f),
-				XMFLOAT4(0.3f, 0.4f, 0.5f, 1.0f)
+				XMFLOAT4(0.777f, 0.977f, -0.177f, 1.0f),
+				XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
 			};
 
 			//update constant buffer
@@ -790,8 +790,11 @@ void LetsDrawSomeStuff::Render()
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
-			conBuff.LightColor[0] = LightingColors[1];
-			conBuff.LightDir[0] = LightingDirs[0];
+			for (int i = 0; i < NUM_LIGHTS; ++i)
+			{
+				conBuff.LightColor[i] = LightingColors[i];
+				conBuff.LightDir[i] = LightingDirs[i];
+			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 

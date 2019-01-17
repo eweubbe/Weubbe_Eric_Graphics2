@@ -13,8 +13,8 @@ cbuffer ConstantBuffer : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
-	float4 lightDir[1];
-	float4 lightCol[1];
+	float4 lightDir[2];
+	float4 lightCol[2];
 	float4 outputCol;
 }
 
