@@ -392,15 +392,15 @@ void LetsDrawSomeStuff::Cube(UINT _arrPos)
 
 	temp = new Vertex[8];
 	
-	temp[0] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[1] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[2] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[3] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[0] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[1] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[2] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[3] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
 	
-	temp[4] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[5] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[6] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[7] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[4] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[5] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[6] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[7] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
 
 	for (int i = 0; i < 8; ++i)
 	{
@@ -861,9 +861,9 @@ void LetsDrawSomeStuff::Render()
 			//draw cube
 			worldM = XMMatrixRotationY(rotationDegree);
 			XMMATRIX worldCpy = worldM;
-			//worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
+			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
 			//worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
-			worldCpy = XMMatrixInverse(&viewDet, viewM);
+			//worldCpy = XMMatrixInverse(&viewDet, viewM);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
