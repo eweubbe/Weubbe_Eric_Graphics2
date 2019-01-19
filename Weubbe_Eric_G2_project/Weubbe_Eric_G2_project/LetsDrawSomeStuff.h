@@ -736,23 +736,23 @@ void LetsDrawSomeStuff::Render()
 			//Get User Input and update Camera
 			if (GetAsyncKeyState('W') )
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.2f),viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.1f),viewCpy);
 			}
 			else if (GetAsyncKeyState('S') )
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.2f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.1f), viewCpy);
 			}
 			else if (GetAsyncKeyState('A') )
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.2f, 0.0f, 0.0f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.1f, 0.0f, 0.0f), viewCpy);
 			}
 			else if (GetAsyncKeyState('D') )
 			{
-				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.2f, 0.0f, 0.0f), viewCpy);
+				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
 			}
 			else if (GetAsyncKeyState('T') )
 			{
-				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.2f, 0.0f));
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.1f, 0.0f));
 			}
 			else if (GetAsyncKeyState('G'))
 			{
@@ -856,14 +856,14 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
-			//myContext->DrawIndexed(indNums[0], 0, 0);
 			myContext->DrawIndexedInstanced(indNums[0], 3, 0, 0, 0);
 
 			//draw cube
 			worldM = XMMatrixRotationY(rotationDegree);
 			XMMATRIX worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
+			//worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
 			//worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
+			worldCpy = XMMatrixInverse(&viewDet, viewM);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
