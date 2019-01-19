@@ -26,7 +26,6 @@ SamplerState skyFilter : register(s0); //default provided does clamping an bilin
 float4 main(PSVertex _input) : SV_TARGET
 {
 	float4 color = float4(0,0,0,0);
-
 	color += sky.Sample(skyFilter, _input.worldPos);
 
 	 return color;
