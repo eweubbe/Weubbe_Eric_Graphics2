@@ -21,6 +21,7 @@
 #include "VS_Instanced.csh"
 #include "myPShader.csh"
 #include "PSSOLID.csh"
+#include "PS_SkyBox.csh"
 
 
 using namespace DirectX;
@@ -59,6 +60,7 @@ class LetsDrawSomeStuff
 	ID3D11VertexShader* InstanceVshader = nullptr;
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 	ID3D11PixelShader* pSolid = nullptr;
+	ID3D11PixelShader* pSkyBox = nullptr;
 
 	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -68,6 +70,9 @@ class LetsDrawSomeStuff
 	//grass
 	ID3D11Texture2D* grassTex = nullptr;
 	ID3D11ShaderResourceView* grassView = nullptr;
+	//skybox
+	ID3D11Texture2D* skyTex = nullptr;
+	ID3D11ShaderResourceView* skyView = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -187,6 +192,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = CreateDDSTextureFromFile(myDevice, L"t_DeadTree.dds", (ID3D11Resource**)&treeTex, &treeView);
 			//grass
 			hr = CreateDDSTextureFromFile(myDevice, L"grass_seamless.dds", (ID3D11Resource**)&grassTex, &grassView);
+			//skybox
+			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -259,6 +266,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreateVertexShader(VS_Instanced, sizeof(VS_Instanced), nullptr, &InstanceVshader);
 			hr = myDevice->CreatePixelShader(MyPShader, sizeof(MyPShader), nullptr, &pShader);
 			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
+			hr = myDevice->CreatePixelShader(PS_SkyBox, sizeof(PS_SkyBox), nullptr, &pSkyBox);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -685,10 +693,13 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	InstanceVshader->Release();
 	pShader->Release();
 	pSolid->Release();
+	pSkyBox->Release();
 	treeTex->Release();
 	treeView->Release();
 	grassTex->Release();
 	grassView->Release();
+	skyTex->Release();
+	skyView->Release();
 	SamplerLinear->Release();
 
 	//delete dynamic memory
@@ -792,7 +803,7 @@ void LetsDrawSomeStuff::Render()
 				myDepthStencilView->Release();
 			}
 
-			// Clear the screen to dark green
+			// Clear the screen to color
 			const float d_green[] = { 0, 0.5f, 0, 1 };
 			const float black[] = { 0,0,0,1 };
 			const float sky[] = { 0.0f, 0.1f, 0.15f, 1 };
@@ -840,6 +851,8 @@ void LetsDrawSomeStuff::Render()
 			UINT strides[] = {sizeof(Vertex)}; //distance between 2 vertecies
 			UINT offsets[] = {0}; //where to start from in array
 
+			ID3D11ShaderResourceView* srvs[] = { skyView };
+
 
 			//draw skybox
 			worldM = XMMatrixIdentity();
@@ -855,6 +868,8 @@ void LetsDrawSomeStuff::Render()
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
 			//geometry shader
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
@@ -881,7 +896,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(InstanceVshader, 0, 0);
-			ID3D11ShaderResourceView* srvs[] = { treeView };
+			srvs[0] = { treeView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
