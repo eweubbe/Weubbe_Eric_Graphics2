@@ -6,6 +6,7 @@ struct PSVertex
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
 	float4 worldPos : TEXCOORD2;
+	float3 boxPos : TEXCOORD3;
 };
 
 cbuffer ConstantBuffer : register(b0)

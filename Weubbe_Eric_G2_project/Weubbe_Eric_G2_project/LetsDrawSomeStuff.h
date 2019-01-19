@@ -49,7 +49,7 @@ class LetsDrawSomeStuff
 	ID3D11DeviceContext *myContext = nullptr;
 
 	// TODO: Add your own D3D11 variables here (be sure to "Release()" them when done!)
-	
+	HRESULT hr;
 	//video card version of new
 	ID3D11Buffer* vBuffer[NUM_OBJECTS];
 	ID3D11Buffer* iBuffer[NUM_OBJECTS];
@@ -144,7 +144,7 @@ public:
 	// Draw
 	void Render();
 	// Handle Window Resize
-	void Resize(GW::SYSTEM::GWindowInputEvents _event);
+	void Resize(GW::SYSTEM::GWindowInputEvents _event, GW::SYSTEM::GWindow* _window);
 };
 
 // Init
@@ -166,8 +166,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			mySurface->GetContext((void**)&myContext);
 
 			// TODO: Create new DirectX stuff here! (Buffers, Shaders, Layouts, Views, Textures, etc...)
-
-			HRESULT hr;
 
 			//set up viewport
 			UINT vpWidth;
@@ -459,10 +457,10 @@ void LetsDrawSomeStuff::Plane(UINT _arrPos)
 	Vertex* temp = new Vertex[4];
 	
 
-	temp[0] = { XMFLOAT4(-10.0f, 0.0f, -10.0f, 1.0f), color, XMFLOAT2(0,0), XMFLOAT4(0,1,0,1)};
-	temp[1] = { XMFLOAT4(-10.0f, 0.0f, 10.0f, 1.0f), color, XMFLOAT2(0,1), XMFLOAT4(0,1,0,1)};
-	temp[2] = { XMFLOAT4(10.0f, 0.0f, -10.0f, 1.0f), color, XMFLOAT2(1,0), XMFLOAT4(0,1,0,1)};
-	temp[3] = { XMFLOAT4(10.0f, 0.0f, 10.0f, 1.0f), color, XMFLOAT2(1,1), XMFLOAT4(0,1,0,1) };
+	temp[0] = { XMFLOAT4(-30.0f, 0.0f, -30.0f, 1.0f), color, XMFLOAT2(0,0), XMFLOAT4(0,1,0,1)};
+	temp[1] = { XMFLOAT4(-30.0f, 0.0f, 30.0f, 1.0f), color, XMFLOAT2(0,1), XMFLOAT4(0,1,0,1)};
+	temp[2] = { XMFLOAT4(30.0f, 0.0f, -30.0f, 1.0f), color, XMFLOAT2(1,0), XMFLOAT4(0,1,0,1)};
+	temp[3] = { XMFLOAT4(30.0f, 0.0f, 30.0f, 1.0f), color, XMFLOAT2(1,1), XMFLOAT4(0,1,0,1) };
 
 	vertNums[_arrPos] = 4;
 	objs[_arrPos] = temp;
@@ -729,11 +727,49 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 }
 
 // Handle Window Resize
-void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event)
+void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event, GW::SYSTEM::GWindow* _window)
 {
-	if (_event == GW::SYSTEM::GWindowInputEvents::MAXIMIZE)
-	{
-		
+	//get new client width and height
+	UINT width;
+	UINT height;
+	_window->GetClientWidth(width);
+	_window->GetHeight(height);
+
+	if (_event == GW::SYSTEM::GWindowInputEvents::RESIZE)
+	{	
+		// Grab handles to all DX11 base interfaces
+		//myDevice->Release();
+		mySwapChain->Release();
+		//mySurface->GetDevice((void**)&myDevice);
+		mySurface->GetSwapchain((void**)&mySwapChain);
+
+		////REMAKE BUFFERS
+		//D3D11_BUFFER_DESC bDesc;
+		//D3D11_SUBRESOURCE_DATA subData;
+		//ZeroMemory(&bDesc, sizeof(bDesc));
+		//ZeroMemory(&subData, sizeof(subData));
+		////VERTEX BUFFER
+		//	//set up buffer description
+		//bDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		//bDesc.CPUAccessFlags = 0;
+		//bDesc.MiscFlags = 0;
+		//bDesc.StructureByteStride = 0;
+		//bDesc.Usage = D3D11_USAGE_DEFAULT; //would change if constantly rewriting a constant buffer
+		//for (int i = 0; i < NUM_OBJECTS; ++i)
+		//{
+		//	bDesc.ByteWidth = sizeof(Vertex) * vertNums[i];
+		//	subData.pSysMem = objs[i];
+		//	hr = myDevice->CreateBuffer(&bDesc, &subData, &vBuffer[i]);
+		//}
+
+		////INDEX BUFFER
+		//bDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		//for (int i = 0; i < NUM_OBJECTS; ++i)
+		//{
+		//	bDesc.ByteWidth = sizeof(UINT) * indNums[i];
+		//	subData.pSysMem = indices[i];
+		//	hr = myDevice->CreateBuffer(&bDesc, &subData, &iBuffer[i]);
+		//}
 	}
 }
 

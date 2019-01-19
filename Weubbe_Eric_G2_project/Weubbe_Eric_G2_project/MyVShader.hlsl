@@ -35,11 +35,13 @@ struct PSVertex
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
 	float4 worldPos : TEXCOORD2;
+	float3 boxPos : TEXCOORD3;
 };
 
 PSVertex main(InputVertex _input)
 {
 	PSVertex output = (PSVertex)0;
+	output.boxPos = (_input.pos).xyz;
 	//position
 	output.pos = mul(_input.pos, world);
 	output.worldPos = output.pos;

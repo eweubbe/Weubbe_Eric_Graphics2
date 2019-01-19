@@ -8,6 +8,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 outputCol;
 	float pointRad;
 	matrix TreeInstPositions[3];
+	float3 boxPos : TEXCOORD3;
 }
 
 struct InputVertex
@@ -25,6 +26,7 @@ struct PSVertex
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
 	float4 worldPos : TEXCOORD2;
+	float3 boxPos : TEXCOORD3;
 };
 
 PSVertex main(InputVertex _input, uint instanceID : SV_InstanceID)

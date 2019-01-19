@@ -5,6 +5,7 @@ struct PSVertex
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
 	float4 worldPos : TEXCOORD2;
+	float3 boxPos : TEXCOORD3;
 };
 
 cbuffer ConstantBuffer : register(b0)
@@ -26,7 +27,7 @@ SamplerState skyFilter : register(s0); //default provided does clamping an bilin
 float4 main(PSVertex _input) : SV_TARGET
 {
 	float4 color = float4(0,0,0,0);
-	color += sky.Sample(skyFilter, _input.worldPos);
+	color += sky.Sample(skyFilter, _input.boxPos);
 
 	 return color;
 }
