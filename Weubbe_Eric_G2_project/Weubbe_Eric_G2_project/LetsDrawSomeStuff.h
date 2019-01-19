@@ -742,6 +742,7 @@ void LetsDrawSomeStuff::Render()
 		float deltY = startingCursorPos.y - currCursorPos.y;
 
 		XMMATRIX viewCpy = viewM;
+		XMMATRIX worldCpy = worldM;
 
 		if (deltaT > (1.0f / 60.0f))
 		{
@@ -761,25 +762,25 @@ void LetsDrawSomeStuff::Render()
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f,0.0f,0.1f),viewCpy);
 			}
-			else if (GetAsyncKeyState('S') )
+			if (GetAsyncKeyState('S') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, -0.1f), viewCpy);
 			}
-			else if (GetAsyncKeyState('A') )
+			if (GetAsyncKeyState('A') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(-0.1f, 0.0f, 0.0f), viewCpy);
 			}
-			else if (GetAsyncKeyState('D') )
+			if (GetAsyncKeyState('D') )
 			{
 				viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.1f, 0.0f, 0.0f), viewCpy);
 			}
-			else if (GetAsyncKeyState('T') )
+			if (GetAsyncKeyState('T') )
 			{
 				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, 0.1f, 0.0f));
 			}
-			else if (GetAsyncKeyState('G'))
+			if (GetAsyncKeyState('G'))
 			{
-				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.2f, 0.0f));
+				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.1f, 0.0f));
 			}
 
 			if ((abs(deltX) > 1))
@@ -787,20 +788,18 @@ void LetsDrawSomeStuff::Render()
 				XMVECTOR origPos = viewCpy.r[3];
 				XMVECTOR origin = {0.0f, 0.0f, 0.0f, 1.0f};
 				viewCpy.r[3] = origin;
-				viewCpy = XMMatrixMultiply(viewCpy,XMMatrixRotationY(-(deltX*0.01f)));
+				viewCpy = XMMatrixMultiply(viewCpy,XMMatrixRotationY(-(deltX*0.005f)));
 				viewCpy =XMMatrixMultiply(viewCpy, XMMatrixTranslation(origPos.m128_f32[0], origPos.m128_f32[1], origPos.m128_f32[2])); 
 				startingCursorPos.x = currCursorPos.x;
 			}
 			if ((abs(deltY) > 1))
 			{
-				viewCpy = XMMatrixMultiply( XMMatrixRotationX(-(deltY*0.01f)), viewCpy);
+				viewCpy = XMMatrixMultiply( XMMatrixRotationX(-(deltY*0.005f)), viewCpy);
 				startingCursorPos.y = currCursorPos.y;
 			}
-			
 		}
 
 		//rotate object
-		//worldM = XMMatrixRotationY(rotationDegree);
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
@@ -867,9 +866,9 @@ void LetsDrawSomeStuff::Render()
 
 
 			//draw skybox
-			worldM = XMMatrixIdentity();
-			XMMATRIX worldCpy = worldM;
-			worldCpy = XMMatrixInverse(&viewDet, viewM);
+			viewDet = XMMatrixDeterminant(viewM);
+			XMMATRIX temp = XMMatrixInverse(&viewDet, viewM);
+			worldCpy.r[3] = temp.r[3];
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
@@ -936,9 +935,6 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
 
-
-
-			
 			/////////////////////////////////////////////////////////////////////////////
 
 			// Present Backbuffer using Swapchain object
