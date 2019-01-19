@@ -19,7 +19,7 @@ cbuffer ConstantBuffer : register(b0)
 	matrix TreeInstPositions[3];
 }
 
-texture2D tree : register(t0);
+textureCUBE sky : register(t0);
 
 SamplerState skyFilter : register(s0); //default provided does clamping an bilinear filter
 
@@ -27,7 +27,7 @@ float4 main(PSVertex _input) : SV_TARGET
 {
 	float4 color = float4(0,0,0,0);
 
-	color += tree.Sample(skyFilter, _input.worldPos);
+	color += sky.Sample(skyFilter, lerp(_input.worldPos, _input.pos, 0.5f));
 
 	 return color;
 }

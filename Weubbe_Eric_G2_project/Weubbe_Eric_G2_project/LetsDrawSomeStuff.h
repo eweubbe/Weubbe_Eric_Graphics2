@@ -871,7 +871,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->PSSetShader(pSkyBox, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
 			//clear z buffer again
 			if (G_SUCCESS(mySurface->GetDepthStencilView((void**)&myDepthStencilView)))
