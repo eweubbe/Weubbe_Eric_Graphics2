@@ -27,7 +27,7 @@ float4 main(PSVertex _input) : SV_TARGET
 {
 	float4 color = float4(0,0,0,0);
 
-	color += sky.Sample(skyFilter, lerp(_input.worldPos, _input.pos, 0.5f));
+	color += sky.Sample(skyFilter, _input.worldPos);
 
 	 return color;
 }

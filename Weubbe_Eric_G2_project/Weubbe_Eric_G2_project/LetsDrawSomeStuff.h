@@ -400,15 +400,27 @@ void LetsDrawSomeStuff::Cube(UINT _arrPos)
 
 	temp = new Vertex[8];
 	
-	temp[0] = { XMFLOAT4(-0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[1] = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[2] = { XMFLOAT4(0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[3] = { XMFLOAT4(-0.5f, -0.5f, 0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	
-	temp[4] = { XMFLOAT4(-0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[5] = { XMFLOAT4(0.5f, 0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[6] = { XMFLOAT4(0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
-	temp[7] = { XMFLOAT4(-0.5f, -0.5f, -0.5f, 1), CubeColor, XMFLOAT2(0,0) };
+	float cubeDimension = 30.0f;
+
+	//temp[0] = { XMFLOAT4(-0.1f, 0.1f, 0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[1] = { XMFLOAT4(0.1f, 0.1f, 0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[2] = { XMFLOAT4(0.1f, -0.1f, 0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[3] = { XMFLOAT4(-0.1f, -0.1f, 0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//
+	//temp[4] = { XMFLOAT4(-0.1f, 0.1f, -0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[5] = { XMFLOAT4(0.1f, 0.1f, -0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[6] = { XMFLOAT4(0.1f, -0.1f, -0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+	//temp[7] = { XMFLOAT4(-0.1f, -0.1f, -0.1f, 1), CubeColor, XMFLOAT2(0,0) };
+
+	temp[0] = { XMFLOAT4(-cubeDimension, cubeDimension, cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[1] = { XMFLOAT4(cubeDimension, cubeDimension, cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[2] = { XMFLOAT4(cubeDimension, -cubeDimension, cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[3] = { XMFLOAT4(-cubeDimension, -cubeDimension, cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+
+	temp[4] = { XMFLOAT4(-cubeDimension, cubeDimension, -cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[5] = { XMFLOAT4(cubeDimension, cubeDimension, -cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[6] = { XMFLOAT4(cubeDimension, -cubeDimension, -cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
+	temp[7] = { XMFLOAT4(-cubeDimension, -cubeDimension, -cubeDimension, 1), CubeColor, XMFLOAT2(0,0) };
 
 	for (int i = 0; i < 8; ++i)
 	{
