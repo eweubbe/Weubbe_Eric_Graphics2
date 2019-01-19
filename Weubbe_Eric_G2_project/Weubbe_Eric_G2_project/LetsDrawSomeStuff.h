@@ -26,6 +26,9 @@
 
 using namespace DirectX;
 using namespace std;
+using namespace GW;
+using namespace CORE;
+using namespace SYSTEM;
 
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
@@ -140,6 +143,8 @@ public:
 	~LetsDrawSomeStuff();
 	// Draw
 	void Render();
+	// Handle Window Resize
+	void Resize(GW::SYSTEM::GWindowInputEvents _event);
 };
 
 // Init
@@ -253,10 +258,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//convert view matrix back to raw data
 			viewDet = XMMatrixDeterminant(viewM);
 			viewM = XMMatrixInverse(&viewDet, viewM);
-			//XMMATRIX viewCpy = viewM;
-			//viewCpy = XMMatrixMultiply(XMMatrixRotationX(342.0f), viewCpy);
-			//viewCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 10.0f), viewCpy);
-			//viewM = viewCpy;
 
 			//Initialize the projection matrix
 			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
@@ -727,6 +728,15 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	}
 }
 
+// Handle Window Resize
+void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event)
+{
+	if (_event == GW::SYSTEM::GWindowInputEvents::MAXIMIZE)
+	{
+		
+	}
+}
+
 // Draw
 void LetsDrawSomeStuff::Render()
 {
@@ -738,8 +748,8 @@ void LetsDrawSomeStuff::Render()
 		//cursor info
 		POINT currCursorPos;
 		GetCursorPos(&currCursorPos);
-		float deltX = startingCursorPos.x - currCursorPos.x;
-		float deltY = startingCursorPos.y - currCursorPos.y;
+		long deltX = startingCursorPos.x - currCursorPos.x;
+		long deltY = startingCursorPos.y - currCursorPos.y;
 
 		XMMATRIX viewCpy = viewM;
 		XMMATRIX worldCpy = worldM;
@@ -868,6 +878,7 @@ void LetsDrawSomeStuff::Render()
 			//draw skybox
 			viewDet = XMMatrixDeterminant(viewM);
 			XMMATRIX temp = XMMatrixInverse(&viewDet, viewM);
+			temp = XMMatrixMultiply(temp, worldCpy);
 			worldCpy.r[3] = temp.r[3];
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
