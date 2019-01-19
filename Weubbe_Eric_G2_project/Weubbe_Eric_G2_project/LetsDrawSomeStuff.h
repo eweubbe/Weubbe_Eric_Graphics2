@@ -812,7 +812,7 @@ void LetsDrawSomeStuff::Render()
 
 			//update constant buffer
 			ConstantBuffer conBuff;
-			conBuff.world = XMMatrixTranspose(worldM);
+			//conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
 			for (int i = 0; i < NUM_LIGHTS; ++i)
@@ -822,11 +822,6 @@ void LetsDrawSomeStuff::Render()
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 10.0f;
-			for (int i = 0; i < TREE_INSTANCES; ++i)
-			{
-				conBuff.TreeInstPositions[i] = treePos[i];
-			}
-			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
@@ -839,31 +834,17 @@ void LetsDrawSomeStuff::Render()
 			//rasterizer
 			myContext->RSSetViewports(1, &myPort);
 
-			//input assembler
+			//input assembler general info
 			myContext->IASetInputLayout(vLayout);
 			ID3D11Buffer* tempVB[] = { vBuffer[0] }; // multiple buffers would be for splitting data up, i.e. separate buffers for pos and color
 			UINT strides[] = {sizeof(Vertex)}; //distance between 2 vertecies
 			UINT offsets[] = {0}; //where to start from in array
 
-			//draw tree
-			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-			myContext->IASetIndexBuffer(iBuffer[0], DXGI_FORMAT_R32_UINT, 0);
-			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
-			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->VSSetShader(InstanceVshader, 0, 0);
-			ID3D11ShaderResourceView* srvs[] = { treeView };
-			myContext->PSSetShaderResources(0, 1, srvs);
-			myContext->PSSetSamplers(0, 1, &SamplerLinear);
-			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pShader, 0, 0);
-			myContext->DrawIndexedInstanced(indNums[0], 3, 0, 0, 0);
 
-			//draw cube
-			worldM = XMMatrixRotationY(rotationDegree);
+			//draw skybox
+			worldM = XMMatrixIdentity();
 			XMMATRIX worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(worldCpy, XMMatrixTranslation(3.0f, 3.0f, 3.0f));
-			//worldM = XMMatrixMultiply(worldCpy, XMMatrixRotationY(-1.5f*(rotationDegree)));
-			//worldCpy = XMMatrixInverse(&viewDet, viewM);
+			worldCpy = XMMatrixInverse(&viewDet, viewM);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
@@ -877,6 +858,36 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[1], 0, 0);
+			//clear z buffer again
+			if (G_SUCCESS(mySurface->GetDepthStencilView((void**)&myDepthStencilView)))
+			{
+				myContext->ClearDepthStencilView(myDepthStencilView, D3D11_CLEAR_DEPTH, 1, 0); // clear it to Z exponential Far.
+				myDepthStencilView->Release();
+			}
+
+			//draw tree
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			for (int i = 0; i < TREE_INSTANCES; ++i)
+			{
+				conBuff.TreeInstPositions[i] = treePos[i];
+			}
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[0];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[0], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(InstanceVshader, 0, 0);
+			ID3D11ShaderResourceView* srvs[] = { treeView };
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pShader, 0, 0);
+			myContext->DrawIndexedInstanced(indNums[0], 3, 0, 0, 0);
+
 
 			//draw plane
 			worldM = XMMatrixIdentity();
