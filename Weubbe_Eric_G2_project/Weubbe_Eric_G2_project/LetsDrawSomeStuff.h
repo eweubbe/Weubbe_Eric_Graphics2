@@ -869,12 +869,12 @@ void LetsDrawSomeStuff::Render()
 			//set up lighting data
 			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.2f, 0.4f, 0.6f, 1.0f),
+				XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
 				XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f)
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.777f, 0.977f, -0.31f, 1.0f),
+				XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
 				pointPos
 			};
 

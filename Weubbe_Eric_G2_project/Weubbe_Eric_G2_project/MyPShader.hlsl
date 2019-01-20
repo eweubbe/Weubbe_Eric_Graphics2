@@ -32,7 +32,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 	//apply ambient light
-	color = lerp(float4(0, 0, 0, 1), color, color + 0.05f);
+	color = lerp(float4(0, 0, 0, 1), color, color * 0.6f );
 	
 	//apply point light (light[1])
 	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
