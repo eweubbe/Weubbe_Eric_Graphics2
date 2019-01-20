@@ -11,9 +11,11 @@ cbuffer ConstantBuffer : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
-	float4 lightDir[1];
-	float4 lightCol[1];
+	float4 lightDir[3];
+	float4 lightCol[3];
 	float4 outputCol;
+	float pointRad;
+	float coneRatio;
 }
 
 float4 main(PSVertex _input) : SV_TARGET

@@ -3,10 +3,11 @@ cbuffer ConstantBuffer : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
-	float4 lightDir[2];
-	float4 lightCol[2];
+	float4 lightDir[3];
+	float4 lightCol[3];
 	float4 outputCol;
 	float pointRad;
+	float coneRatio;
 	matrix TreeInstPositions[3];
 	float3 boxPos : TEXCOORD3;
 }

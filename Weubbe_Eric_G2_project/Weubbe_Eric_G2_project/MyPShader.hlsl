@@ -14,10 +14,11 @@ cbuffer ConstantBuffer : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
-	float4 lightDir[2];
-	float4 lightCol[2];
+	float4 lightDir[3];
+	float4 lightCol[3];
 	float4 outputCol;
 	float pointRad;
+	float coneRatio;
 	matrix TreeInstPositions[3];
 }
 
@@ -32,7 +33,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 	//apply ambient light
-	color = lerp(float4(0, 0, 0, 1), color, color * 0.6f );
+	color = lerp(float4(0, 0, 0, 1), color, color * 0.8f );
 	
 	//apply point light (light[1])
 	float4 pointDir = normalize(lightDir[1] - _input.worldPos);

@@ -34,7 +34,7 @@ using namespace SYSTEM;
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
 #define NUM_OBJECTS 3
-#define NUM_LIGHTS 2
+#define NUM_LIGHTS 3
 #define TREE_INSTANCES 3
 
 // Simple Container class to make life easier/cleaner
@@ -102,6 +102,7 @@ class LetsDrawSomeStuff
 		XMFLOAT4 LightColor[NUM_LIGHTS];
 		XMFLOAT4 OutputColor;
 		float pointRad; //point light radius
+		float coneRatio;
 		XMMATRIX TreeInstPositions[TREE_INSTANCES]; // array of position matrices for instanced trees
 	};
 
@@ -869,14 +870,15 @@ void LetsDrawSomeStuff::Render()
 			//set up lighting data
 			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
-				XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f)
+				/*direction*/ XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
+				/*point*/     XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f),
+				/*spot*/      XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
-				pointPos
-			};
+				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
+				/*point*/     pointPos,
+			};	/*spot*/	  XMFLOAT4(-0.777f, 0.5f, 0.0f, 1.0f);
 
 			//update constant buffer
 			ConstantBuffer conBuff;
@@ -890,6 +892,7 @@ void LetsDrawSomeStuff::Render()
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
+			conBuff.coneRatio = 0.5f;
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
