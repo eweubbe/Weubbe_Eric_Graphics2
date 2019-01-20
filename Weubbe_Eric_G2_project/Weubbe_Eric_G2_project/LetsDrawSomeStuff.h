@@ -869,12 +869,12 @@ void LetsDrawSomeStuff::Render()
 			//set up lighting data
 			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.3f, 0.4f, 0.5f, 1.0f),
+				XMFLOAT4(0.2f, 0.4f, 0.6f, 1.0f),
 				XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f)
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
-				XMFLOAT4(0.777f, 0.977f, -0.177f, 1.0f),
+				XMFLOAT4(0.777f, 0.977f, -0.31f, 1.0f),
 				pointPos
 			};
 
@@ -889,7 +889,7 @@ void LetsDrawSomeStuff::Render()
 				conBuff.LightDir[i] = LightingDirs[i];
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
-			conBuff.pointRad = 10.0f;
+			conBuff.pointRad = 5.0f;
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
