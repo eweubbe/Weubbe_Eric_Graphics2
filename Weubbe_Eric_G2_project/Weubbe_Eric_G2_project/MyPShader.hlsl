@@ -19,6 +19,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 outputCol;
 	float pointRad;
 	float coneRatio;
+	float4 coneDir;
 	matrix TreeInstPositions[3];
 }
 
@@ -40,6 +41,10 @@ float4 main(PSVertex _input) : SV_TARGET
 	float lightRatio = saturate(dot(pointDir, _input.normal));
 	float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
 	color += lightCol[1] * lightRatio * atten;
+
+	//apply spot light (light[2])
+	float4 spotDir = normalize(lightDir[2] - _input.worldPos);
+	float surfaceRatio = saturate(dot(-spotDir, coneDir));
 	
 	
 	//texture object

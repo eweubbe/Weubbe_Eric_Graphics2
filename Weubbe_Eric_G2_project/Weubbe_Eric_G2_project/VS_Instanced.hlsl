@@ -8,8 +8,8 @@ cbuffer ConstantBuffer : register(b0)
 	float4 outputCol;
 	float pointRad;
 	float coneRatio;
+	float4 coneDir;
 	matrix TreeInstPositions[3];
-	float3 boxPos : TEXCOORD3;
 }
 
 struct InputVertex
