@@ -4,6 +4,7 @@ struct PSVertex
 	float4 color : COLOR;
 	float2 uv : TEXCOORD1;
 	float4 normal : NORMAL;
+	float4 worldPos : TEXCOORD2;
 	float3 boxPos : TEXCOORD3;
 };
 

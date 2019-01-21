@@ -33,7 +33,7 @@ using namespace SYSTEM;
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
-#define NUM_OBJECTS 3
+#define NUM_OBJECTS 4
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 3
 
@@ -76,6 +76,9 @@ class LetsDrawSomeStuff
 	//skybox
 	ID3D11Texture2D* skyTex = nullptr;
 	ID3D11ShaderResourceView* skyView = nullptr;
+	//rock
+	ID3D11Texture2D* rockTex = nullptr;
+	ID3D11ShaderResourceView* rockView = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -190,6 +193,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			LoadOBJVerts("dead_tree1.txt", 0);
 			Cube(1);
 			Plane(2);
+			LoadOBJVerts("rock.txt", 3);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -199,6 +203,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = CreateDDSTextureFromFile(myDevice, L"grass_Tile.dds", (ID3D11Resource**)&grassTex, &grassView);
 			//skybox
 			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
+			//rock
+			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_D.dds", (ID3D11Resource**)&rockTex, &rockView);
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -786,6 +792,8 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	grassView->Release();
 	skyTex->Release();
 	skyView->Release();
+	rockTex->Release();
+	rockView->Release();
 	SamplerLinear->Release();
 
 	//delete dynamic memory
@@ -1059,6 +1067,27 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
+
+			//draw rock
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, 8), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[3];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[3], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = rockView;
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pShader, 0, 0);
+			myContext->DrawIndexed(indNums[3], 0, 0);
 
 			/////////////////////////////////////////////////////////////////////////////
 
