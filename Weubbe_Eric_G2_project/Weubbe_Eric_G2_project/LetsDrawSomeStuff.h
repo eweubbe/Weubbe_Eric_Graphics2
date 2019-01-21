@@ -1079,7 +1079,7 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -8), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -3), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
