@@ -43,8 +43,12 @@ float4 main(PSVertex _input) : SV_TARGET
 	color += lightCol[1] * lightRatio * atten;
 
 	//apply spot light (light[2])
-	float4 spotDir = normalize(lightDir[2] - _input.worldPos);
+	float3 spotDir = normalize(lightDir[2] - _input.worldPos);
 	float surfaceRatio = saturate(dot(-spotDir, coneDir));
+	float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
+	lightRatio = saturate(dot(spotDir, _input.normal));
+	atten = 1.0f - saturate((0.2f - surfaceRatio) / (0.2f - coneRatio));
+	color += spotFactor* lightRatio * lightCol[2] * atten ;
 	
 	
 	//texture object

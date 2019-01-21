@@ -196,7 +196,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//tree
 			hr = CreateDDSTextureFromFile(myDevice, L"t_DeadTree.dds", (ID3D11Resource**)&treeTex, &treeView);
 			//grass
-			hr = CreateDDSTextureFromFile(myDevice, L"grass_seamless.dds", (ID3D11Resource**)&grassTex, &grassView);
+			hr = CreateDDSTextureFromFile(myDevice, L"grass_Tile.dds", (ID3D11Resource**)&grassTex, &grassView);
 			//skybox
 			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
 
@@ -285,13 +285,13 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			timer.Restart();
 			deltaT = 0;
 			rotationDegree = 0;
-			pointPos = XMFLOAT4(-5.0f, 3.0f, 6.0f, 1.0f);
+			pointPos = XMFLOAT4(-8.0f, 3.0f, 6.0f, 1.0f);
 			pointLightInc = 0.1f;
 
 			//set instanced tree positions
-			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(5.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(8.0f, 0.0f, 0.0f), XMMatrixIdentity());
 			treePos[1] = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f), XMMatrixIdentity());
-			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-5.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-8.0f, 0.0f, 0.0f), XMMatrixIdentity());
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
@@ -473,6 +473,79 @@ void LetsDrawSomeStuff::Plane(UINT _arrPos)
 		2,1,3
 	};
 	indNums[_arrPos] = 6;
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	//NEEDS WORK (PROCEDURE GRID)
+	//XMFLOAT4 color = { .5f,.5f,.5f,1.0f };
+	//
+	////-30,-30
+	////-30, -25
+	////-25, -30
+	////-25, -25
+	//
+	//float startX = -30.0f;
+	//float startZ = -30.0f;
+	//vertNums[_arrPos] = abs((startX*2)/5.0f) * abs((startZ*2)/5.0f);
+
+	//Vertex* temp = new Vertex[vertNums[_arrPos]];
+
+	//short count = 0;
+
+	//float currX = startX;
+	//float currZ = startZ;
+	//XMFLOAT4 normal = { 0,1,0,1 };
+
+	//for (int i = 0; i < vertNums[_arrPos]; ++i)
+	//{
+	//	XMFLOAT2 uv;
+	//	temp[i] = { XMFLOAT4((startX + (i * 5.0f)), 0.0f, (startZ + (i * 5)), 1.0f), color};
+	//	if (count == 0)
+	//	{
+	//		uv = XMFLOAT2(0, 0);
+	//	}
+	//	else if (count == 1)
+	//	{
+	//		currZ += 5.0f;
+	//		uv = XMFLOAT2(0, 1);
+	//	}
+	//	else if (count == 2)
+	//	{
+	//		currX += 5.0f;
+	//		currZ -= 5.0f;
+	//		uv = XMFLOAT2(1, 0);
+	//	}
+	//	else if (count == 3)
+	//	{
+	//		currZ += 5.0f;
+	//		uv = XMFLOAT2(1, 1);
+	//	}
+	//	
+
+	//	++count;
+
+	//	if (count > 3)
+	//		count = 0;
+	//}
+
+	//objs[_arrPos] = temp;
+
+	//UINT indCount =( vertNums[_arrPos]/4) * 6;
+
+	//indices[_arrPos] = new UINT[indCount];
+	//UINT squareCount = 0;
+
+	//for (int i = 0; i < indCount; i += 6)
+	//{
+	//	UINT spot = i - (2 * squareCount);
+	//	indices[_arrPos][i] = spot;
+	//	indices[_arrPos][i + 1] = spot + 1;
+	//	indices[_arrPos][i + 2] = spot + 2;
+	//	indices[_arrPos][i + 3] = spot + 2;
+	//	indices[_arrPos][i + 4] = spot + 1;
+	//	indices[_arrPos][i + 5] = spot + 3;
+	//	++squareCount;
+	//}
+
+	//indNums[_arrPos] = indCount;
 }
 
 //process vertex information from OBJ file
@@ -879,7 +952,7 @@ void LetsDrawSomeStuff::Render()
 			{
 				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
 				/*point*/     pointPos,
-			};	/*spot*/	  XMFLOAT4(-0.777f, 0.5f, 0.0f, 1.0f);
+			};	/*spot*/	  XMFLOAT4(0.0f, 2.0f, -7.0f, 1.0f);
 
 			//update constant buffer
 			ConstantBuffer conBuff;
@@ -894,7 +967,7 @@ void LetsDrawSomeStuff::Render()
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
 			conBuff.coneRatio = 0.5f;
-			conBuff.coneDir = XMFLOAT4(0.777f, -0.5f, 0.0f, 1.0f);
+			conBuff.coneDir = XMFLOAT4(LightingDirs[2].x - treePos[1].r[3].m128_f32[0], LightingDirs[2].y - treePos[1].r[3].m128_f32[1], LightingDirs[2].z - treePos[1].r[3].m128_f32[2], LightingDirs[2].w - treePos[3].r[3].m128_f32[3]);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
