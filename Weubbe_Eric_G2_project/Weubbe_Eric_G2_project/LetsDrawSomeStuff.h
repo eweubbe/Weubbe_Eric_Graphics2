@@ -33,7 +33,7 @@ using namespace SYSTEM;
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
-#define NUM_OBJECTS 4
+#define NUM_OBJECTS 5
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 3
 
@@ -79,6 +79,9 @@ class LetsDrawSomeStuff
 	//rock
 	ID3D11Texture2D* rockTex = nullptr;
 	ID3D11ShaderResourceView* rockView = nullptr;
+	//sword
+	ID3D11Texture2D* swordTex = nullptr;
+	ID3D11ShaderResourceView* swordView = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -194,6 +197,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			Cube(1);
 			Plane(2);
 			LoadOBJVerts("rock.txt", 3);
+			LoadOBJVerts("sword.txt", 4);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -205,6 +209,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
 			//rock
 			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_D.dds", (ID3D11Resource**)&rockTex, &rockView);
+			//sword 
+			hr = CreateDDSTextureFromFile(myDevice, L"Diaz_Sword_D.dds", (ID3D11Resource**)&swordTex, &swordView);
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -794,6 +800,8 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	skyView->Release();
 	rockTex->Release();
 	rockView->Release();
+	swordTex->Release();
+	swordView->Release();
 	SamplerLinear->Release();
 
 	//delete dynamic memory
@@ -1071,7 +1079,7 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, 8), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -8), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
@@ -1082,12 +1090,33 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			srvs[0] = rockView;
+			srvs[0] = { rockView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[3], 0, 0);
+
+			////draw sword
+			//worldM = XMMatrixIdentity();
+			//worldCpy = worldM;
+			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 2.2f, -8), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.1f, 0.1f, 0.1f), worldCpy);
+			//worldM = worldCpy;
+			//conBuff.world = XMMatrixTranspose(worldM);
+			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			//tempVB[0] = vBuffer[4];
+			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			//myContext->IASetIndexBuffer(iBuffer[4], DXGI_FORMAT_R32_UINT, 0);
+			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			//myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->VSSetShader(vShader, 0, 0);
+			//srvs[0] = { swordView };
+			//myContext->PSSetShaderResources(0, 1, srvs);
+			//myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->PSSetShader(pSolid, 0, 0);
+			//myContext->DrawIndexed(indNums[4], 0, 0);
 
 			/////////////////////////////////////////////////////////////////////////////
 
