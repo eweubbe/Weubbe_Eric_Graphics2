@@ -23,6 +23,7 @@
 #include "PSSOLID.csh"
 #include "PS_SkyBox.csh"
 #include "PSSpec.csh"
+#include "PSReflect.csh"
 
 
 using namespace DirectX;
@@ -68,6 +69,7 @@ class LetsDrawSomeStuff
 	ID3D11PixelShader* pSolid = nullptr;
 	ID3D11PixelShader* pSkyBox = nullptr;
 	ID3D11PixelShader* pSpec = nullptr;
+	ID3D11PixelShader* pSReflect = nullptr;
 
 	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -290,6 +292,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
 			hr = myDevice->CreatePixelShader(PS_SkyBox, sizeof(PS_SkyBox), nullptr, &pSkyBox);
 			hr = myDevice->CreatePixelShader(PSSpec, sizeof(PSSpec), nullptr, &pSpec);
+			hr = myDevice->CreatePixelShader(PSReflect, sizeof(PSReflect), nullptr, &pSReflect);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -815,6 +818,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	pSolid->Release();
 	pSkyBox->Release();
 	pSpec->Release();
+	pSReflect->Release();
 	treeTex->Release();
 	treeView->Release();
 	grassTex->Release();
@@ -1143,11 +1147,11 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			srvs[0] = { swordView };
+			srvs[0] = { skyView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pSpec, 0, 0);
+			myContext->PSSetShader(pSReflect, 0, 0);
 			myContext->DrawIndexed(indNums[4], 0, 0);
 
 			if (_DEBUG)
