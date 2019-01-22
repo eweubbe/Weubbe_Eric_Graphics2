@@ -58,6 +58,8 @@ class LetsDrawSomeStuff
 	ID3D11InputLayout* vLayout = nullptr;
 	//viewport
 	D3D11_VIEWPORT myPort;
+	//rasterizer state
+	ID3D11RasterizerState* rState = nullptr;
 	//shader variables
 	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
 	ID3D11VertexShader* InstanceVshader = nullptr;
@@ -307,6 +309,18 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
+
+			//rasterizer state
+			D3D11_RASTERIZER_DESC rdesc;
+			ZeroMemory(&rdesc, sizeof(rdesc));
+			rdesc.FillMode = D3D11_FILL_SOLID;
+			rdesc.CullMode = D3D11_CULL_NONE;
+			rdesc.FrontCounterClockwise = false;
+			rdesc.DepthClipEnable = true;
+			rdesc.ScissorEnable = false;
+			rdesc.MultisampleEnable = false;
+			rdesc.AntialiasedLineEnable = false;
+			hr = myDevice->CreateRasterizerState(&rdesc, &rState);
 
 			
 		}
@@ -779,7 +793,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	myDevice->Release();
 	mySwapChain->Release();
 	myContext->Release();
-
+	rState->Release();
 	// TODO: "Release()" more stuff here!
 	for (int i = 0; i < NUM_OBJECTS; ++i)
 		vBuffer[i]->Release();
@@ -968,7 +982,8 @@ void LetsDrawSomeStuff::Render()
 			{
 				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
 				/*point*/     pointPos,
-			};	/*spot*/	  XMFLOAT4(0.0f, 2.0f, -7.0f, 1.0f);
+				/*spot*/	  XMFLOAT4(0.0f, 8.0f, 15.0f, 1.0f)
+			};	
 
 			//update constant buffer
 			ConstantBuffer conBuff;
@@ -983,8 +998,10 @@ void LetsDrawSomeStuff::Render()
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
 			conBuff.coneRatio = 0.5f;
-			conBuff.coneDir = XMFLOAT4(LightingDirs[2].x - treePos[1].r[3].m128_f32[0], LightingDirs[2].y - treePos[1].r[3].m128_f32[1], LightingDirs[2].z - treePos[1].r[3].m128_f32[2], LightingDirs[2].w - treePos[3].r[3].m128_f32[3]);
+			conBuff.coneDir = XMFLOAT4(0, -8.0f, -7.0f, 1.0f);
+			//conBuff.coneDir = XMFLOAT4(-0.777f, 0.877f, -0.33f, 1.0f);
 
+			
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
 			//SET UP THE PIPELINE/////////////////////////////////////////////////////////
@@ -1017,6 +1034,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
 			myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->RSSetState(rState);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
 			//geometry shader
@@ -1117,6 +1135,31 @@ void LetsDrawSomeStuff::Render()
 			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			//myContext->PSSetShader(pSolid, 0, 0);
 			//myContext->DrawIndexed(indNums[4], 0, 0);
+
+			if (_DEBUG)
+			{
+				//draw cube for spot light pos
+				worldM = XMMatrixIdentity();
+				worldCpy = worldM;
+				XMVECTOR spotPos = { LightingDirs[2].x, LightingDirs[2].y, LightingDirs[2].z, LightingDirs[2].w };
+				worldCpy.r[3] = spotPos;
+				worldCpy = XMMatrixMultiply(XMMatrixScaling(0.001f, 0.001f, 0.001f), worldCpy);
+				worldM = worldCpy;
+				conBuff.world = XMMatrixTranspose(worldM);
+				myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+				tempVB[0] = vBuffer[1];
+				myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+				myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
+				myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+				myContext->VSSetShader(vShader, 0, 0);
+				myContext->PSSetShaderResources(0, 1, srvs);
+				myContext->PSSetSamplers(0, 1, &SamplerLinear);
+				myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+				myContext->PSSetShader(pSolid, 0, 0);
+				myContext->DrawIndexed(indNums[1], 0, 0);
+			}
+			
 
 			/////////////////////////////////////////////////////////////////////////////
 

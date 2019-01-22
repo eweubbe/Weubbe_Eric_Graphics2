@@ -34,7 +34,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 	//apply ambient light
-	color *= lerp(float4(0, 0, 0, 1), color, color + 0.2f );
+	color = lerp(float4(0, 0, 0, 1), color,  color + 0.2f );
 	
 	//apply point light (light[1])
 	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
@@ -42,13 +42,13 @@ float4 main(PSVertex _input) : SV_TARGET
 	float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
 	color += lightCol[1] * lightRatio * atten;
 
-	////apply spot light (light[2])
-	//float3 spotDir = normalize(lightDir[2] - _input.worldPos);
-	//float surfaceRatio = saturate(dot(-spotDir, coneDir));
-	//float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
-	//lightRatio = saturate(dot(spotDir, _input.normal));
-	//atten = 1.0f - saturate((0.2f - surfaceRatio) / (0.2f - coneRatio));
-	//color += spotFactor* lightRatio * lightCol[2] * atten ;
+	//apply spot light (light[2])
+	float3 spotDir = normalize(lightDir[2] - _input.worldPos);
+	float surfaceRatio = saturate(dot(-spotDir, coneDir));
+	float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
+	lightRatio = saturate(dot(spotDir, _input.normal));
+	atten = 1.0f - saturate((coneRatio - surfaceRatio) / ( coneRatio - 0.25f));
+	color += spotFactor* lightRatio * lightCol[2] *atten;
 
 	//apply specular
 
