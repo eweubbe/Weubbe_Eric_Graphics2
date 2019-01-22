@@ -132,6 +132,9 @@ class LetsDrawSomeStuff
 	//point light varis
 	XMFLOAT4 pointPos;
 	float pointLightInc;
+	//direction light vars
+	XMFLOAT4 direcDirec;
+	float direcInc;
 	//tree position matrices
 	XMMATRIX treePos[TREE_INSTANCES];
 
@@ -214,7 +217,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//skybox
 			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
 			//rock
-			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_D.dds", (ID3D11Resource**)&rockTex, &rockView);
+			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_Spec_8BB.dds", (ID3D11Resource**)&rockTex, &rockView);
 			//sword 
 			hr = CreateDDSTextureFromFile(myDevice, L"Diaz_Sword_D.dds", (ID3D11Resource**)&swordTex, &swordView);
 
@@ -306,6 +309,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			rotationDegree = 0;
 			pointPos = XMFLOAT4(-8.0f, 3.0f, 6.0f, 1.0f);
 			pointLightInc = 0.1f;
+			direcDirec = XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f);
+			direcInc = 0.005;
 
 			//set instanced tree positions
 			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(8.0f, 0.0f, 0.0f), XMMatrixIdentity());
@@ -326,8 +331,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			rdesc.MultisampleEnable = false;
 			rdesc.AntialiasedLineEnable = false;
 			hr = myDevice->CreateRasterizerState(&rdesc, &rState);
-
-			
 		}
 	}
 }
@@ -914,6 +917,11 @@ void LetsDrawSomeStuff::Render()
 			if ((pointPos.z >= 6.0f) | (pointPos.z <= -6.0f))
 				pointLightInc = -pointLightInc;
 
+			//update direct light direction
+			direcDirec.x -= direcInc;
+			if ((direcDirec.x <= -0.9f) | (direcDirec.x >= 0.9f))
+				direcInc = -direcInc;
+
 			//Get User Input and update Camera
 			if (GetAsyncKeyState('W') )
 			{
@@ -986,7 +994,7 @@ void LetsDrawSomeStuff::Render()
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
-				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
+				/*direction*/ direcDirec,
 				/*point*/     pointPos,
 				/*spot*/	  XMFLOAT4(5.0f, 5.0f, -10.0f, 1.0f)
 			};	
