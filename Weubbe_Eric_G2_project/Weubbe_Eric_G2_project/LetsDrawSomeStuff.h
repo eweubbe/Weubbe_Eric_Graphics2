@@ -1113,7 +1113,7 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -3), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-1.5f, 0, -3), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
@@ -1130,13 +1130,24 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexed(indNums[3], 0, 0);
+			//draw 2nd rock w/o spec
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, 0, -3), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pShader, 0, 0);
+			myContext->DrawIndexed(indNums[3], 0, 0);
 
 			////draw sword
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 2.2f, -8), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, -2.5f, -3.1f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
