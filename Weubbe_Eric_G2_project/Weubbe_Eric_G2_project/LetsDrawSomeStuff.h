@@ -123,7 +123,7 @@ class LetsDrawSomeStuff
 	int vertNums[NUM_OBJECTS];
 	UINT* indices[NUM_OBJECTS];
 	int indNums[NUM_OBJECTS];
-	float modelScale = 0.5f;
+	float modelScale = 1.0f;
 
 	//timer variables
 	XTime timer;
@@ -1110,7 +1110,7 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -3), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
@@ -1132,8 +1132,8 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = worldM;
 			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 2.2f, -8), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, -3.2f, -3.1f), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, -2.5f, -3.1f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
