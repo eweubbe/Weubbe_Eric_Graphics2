@@ -22,6 +22,7 @@
 #include "myPShader.csh"
 #include "PSSOLID.csh"
 #include "PS_SkyBox.csh"
+#include "PSSpec.csh"
 
 
 using namespace DirectX;
@@ -66,6 +67,7 @@ class LetsDrawSomeStuff
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 	ID3D11PixelShader* pSolid = nullptr;
 	ID3D11PixelShader* pSkyBox = nullptr;
+	ID3D11PixelShader* pSpec = nullptr;
 
 	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -284,6 +286,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreatePixelShader(MyPShader, sizeof(MyPShader), nullptr, &pShader);
 			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
 			hr = myDevice->CreatePixelShader(PS_SkyBox, sizeof(PS_SkyBox), nullptr, &pSkyBox);
+			hr = myDevice->CreatePixelShader(PSSpec, sizeof(PSSpec), nullptr, &pSpec);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -808,6 +811,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	pShader->Release();
 	pSolid->Release();
 	pSkyBox->Release();
+	pSpec->Release();
 	treeTex->Release();
 	treeView->Release();
 	grassTex->Release();
@@ -1112,7 +1116,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pShader, 0, 0);
+			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexed(indNums[3], 0, 0);
 
 			////draw sword

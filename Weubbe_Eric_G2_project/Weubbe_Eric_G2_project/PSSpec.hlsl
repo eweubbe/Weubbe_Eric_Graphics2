@@ -1,4 +1,3 @@
-//super basic pixel shader
 struct PSVertex
 {
 	float4 pos : SV_POSITION;
@@ -36,8 +35,8 @@ float4 main(PSVertex _input) : SV_TARGET
 	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 	//apply ambient light
-	color = lerp(float4(0, 0, 0, 1), color, color + 0.9f );
-	
+	color = lerp(float4(0, 0, 0, 1), color, color + 0.9f);
+
 	//apply point light (light[1])
 	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
 	float lightRatio = saturate(dot(pointDir, _input.normal));
@@ -49,14 +48,21 @@ float4 main(PSVertex _input) : SV_TARGET
 	float surfaceRatio = saturate(dot(-spotDir, coneDir));
 	atten = 1.0f - saturate((coneRatio - surfaceRatio) / (coneRatio - 0.8f));
 	lightRatio = saturate(dot(spotDir, _input.normal));
-	color +=  lightRatio * lightCol[2] *atten;
-	
+	color += lightRatio * lightCol[2] * atten;
+
+	//apply specular
+	float3 viewDir = normalize(_input.boxPos - _input.worldPos);
+	float3 halfVec = normalize((lightDir[0]) + viewDir);
+	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 10), 0);
+	color += lightCol[0] * intensity * 10;
+
+
 	//texture object
 	color *= tree.Sample(treeFilter, _input.uv);
 	 if (color.w == 0)
 	 {
 		 discard;
 	 }
-	
+
 	 return color;
 }

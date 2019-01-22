@@ -12,7 +12,6 @@ cbuffer ConstantBuffer : register(b0)
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[3];
-
 }
 
 struct InputVertex

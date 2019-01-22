@@ -74,6 +74,9 @@
     <FxCompile Include="PS_SkyBox.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PSSpec.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LetsDrawSomeStuff.h">
