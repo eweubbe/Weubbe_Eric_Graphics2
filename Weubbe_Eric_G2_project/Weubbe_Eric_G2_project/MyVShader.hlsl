@@ -53,7 +53,7 @@ PSVertex main(InputVertex _input)
 	output.pos = mul(output.pos, projection);
 
 	//lighting
-	_input.normal.w = 1.0f;
+	_input.normal.w = 0.0f;
 	output.normal = mul(_input.normal, world);
 	
 

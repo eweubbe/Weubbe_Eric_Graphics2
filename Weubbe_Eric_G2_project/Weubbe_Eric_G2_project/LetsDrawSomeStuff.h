@@ -306,7 +306,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 
 			//set instanced tree positions
 			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(8.0f, 0.0f, 0.0f), XMMatrixIdentity());
-			treePos[1] = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[1] = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 20.0f), XMMatrixIdentity());
 			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-8.0f, 0.0f, 0.0f), XMMatrixIdentity());
 
 			//set initial cursor position
@@ -984,7 +984,7 @@ void LetsDrawSomeStuff::Render()
 			{
 				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
 				/*point*/     pointPos,
-				/*spot*/	  XMFLOAT4(0.0f, 5.0f, 5.0f, 1.0f)
+				/*spot*/	  XMFLOAT4(5.0f, 5.0f, -10.0f, 1.0f)
 			};	
 
 			//update constant buffer
@@ -1000,7 +1000,7 @@ void LetsDrawSomeStuff::Render()
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
 			conBuff.coneRatio = 0.9f;
-			conBuff.coneDir = XMFLOAT4(0, -1.0f, 0.0f, 1.0f);
+			conBuff.coneDir = XMFLOAT4(-0.3, -1.0f, 0.5f, 1.0f);
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
@@ -1097,8 +1097,8 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -3), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, 6), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);

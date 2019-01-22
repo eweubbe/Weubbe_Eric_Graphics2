@@ -23,6 +23,7 @@ cbuffer ConstantBuffer : register(b0)
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[3];
+
 }
 
 texture2D tree : register(t0);
@@ -36,7 +37,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	//apply directional light (light[0])
 	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
 	//apply ambient light
-	color = lerp(float4(0, 0, 0, 1), color,  color + 0.2f );
+	color = lerp(float4(0, 0, 0, 1), color, color + 0.9f );
 	
 	//apply point light (light[1])
 	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
@@ -46,17 +47,16 @@ float4 main(PSVertex _input) : SV_TARGET
 
 	//apply spot light (light[2])
 	float3 spotDir = normalize(lightDir[2] - _input.worldPos);
-	//float3 coneDir3 = float3(coneDir.x, coneDir.y, coneDir.z);
 	float surfaceRatio = saturate(dot(-spotDir, coneDir));
-	//float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
 	atten = 1.0f - saturate((coneRatio - surfaceRatio) / (coneRatio - 0.8f));
 	lightRatio = saturate(dot(spotDir, _input.normal));
 	color +=  lightRatio * lightCol[2] *atten;
 
-	/*float4 col2 = color;
-	return col2;*/
-
 	//apply specular
+	float3 viewDir = normalize(_input.boxPos - _input.worldPos);
+	float3 halfVec = normalize((lightDir[0]) + viewDir);
+	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 10), 0);
+	color += lightCol[0] * intensity * 10;
 	
 	
 	//texture object

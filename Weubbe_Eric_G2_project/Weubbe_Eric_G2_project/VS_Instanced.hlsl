@@ -12,6 +12,7 @@ cbuffer ConstantBuffer : register(b0)
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[3];
+
 }
 
 struct InputVertex
@@ -42,8 +43,8 @@ PSVertex main(InputVertex _input, uint instanceID : SV_InstanceID)
 	output.pos = mul(output.pos, projection);
 
 	//lighting
-	_input.normal.w = 1.0f;
-	output.normal = mul(_input.normal, world);
+	_input.normal.w = 0.0f;
+	output.normal = mul(TreeInstPositions[instanceID], _input.normal);
 
 
 	//texture
