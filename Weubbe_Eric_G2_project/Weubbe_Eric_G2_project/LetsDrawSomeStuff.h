@@ -219,7 +219,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//skybox
 			hr = CreateDDSTextureFromFile(myDevice, L"NightSky.dds", (ID3D11Resource**)&skyTex, &skyView);
 			//rock
-			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_Spec_8BB.dds", (ID3D11Resource**)&rockTex, &rockView);
+			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_D.dds", (ID3D11Resource**)&rockTex, &rockView);
 			//sword 
 			hr = CreateDDSTextureFromFile(myDevice, L"PlayerWeapon_Diffuse.dds", (ID3D11Resource**)&swordTex, &swordView);
 
@@ -1147,8 +1147,10 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -5.5f, 0.0f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(2.2f, 1.0f, 2.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
