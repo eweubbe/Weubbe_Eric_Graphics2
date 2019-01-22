@@ -52,10 +52,13 @@ float4 main(PSVertex _input) : SV_TARGET
 
 	//apply specular
 	float3 viewDir = normalize(_input.boxPos - _input.worldPos);
-	float3 halfVec = normalize((lightDir[0]) + viewDir);
-	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 10), 0);
-	color += lightCol[0] * intensity * 10;
+	float3 halfVec = normalize((spotDir) - viewDir);
+	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 5), 0);
+	color += lightCol[2] * intensity * 50;
 
+	halfVec = normalize((lightDir[0])-viewDir);
+	intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 5), 0);
+	color += lightCol[0] * intensity * 50;
 
 	//texture object
 	color *= tree.Sample(treeFilter, _input.uv);

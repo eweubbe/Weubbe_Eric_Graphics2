@@ -1101,8 +1101,8 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, 6), worldCpy);
-			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 0, -3), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
