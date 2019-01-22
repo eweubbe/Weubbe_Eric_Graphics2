@@ -109,7 +109,9 @@ class LetsDrawSomeStuff
 		XMFLOAT4 LightDir[NUM_LIGHTS];
 		XMFLOAT4 LightColor[NUM_LIGHTS];
 		XMFLOAT4 OutputColor;
+		XMFLOAT3 pad;
 		float pointRad; //point light radius
+		XMFLOAT3 pad2;
 		float coneRatio; //cone light ratio
 		XMFLOAT4 coneDir; //direction of cone light
 		XMMATRIX TreeInstPositions[TREE_INSTANCES]; // array of position matrices for instanced trees
@@ -982,7 +984,7 @@ void LetsDrawSomeStuff::Render()
 			{
 				/*direction*/ XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f),
 				/*point*/     pointPos,
-				/*spot*/	  XMFLOAT4(0.0f, 8.0f, 15.0f, 1.0f)
+				/*spot*/	  XMFLOAT4(0.0f, 5.0f, 5.0f, 1.0f)
 			};	
 
 			//update constant buffer
@@ -997,11 +999,9 @@ void LetsDrawSomeStuff::Render()
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
-			conBuff.coneRatio = 0.5f;
-			conBuff.coneDir = XMFLOAT4(0, -8.0f, -7.0f, 1.0f);
-			//conBuff.coneDir = XMFLOAT4(-0.777f, 0.877f, -0.33f, 1.0f);
+			conBuff.coneRatio = 0.9f;
+			conBuff.coneDir = XMFLOAT4(0, -1.0f, 0.0f, 1.0f);
 
-			
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
 			//SET UP THE PIPELINE/////////////////////////////////////////////////////////

@@ -17,7 +17,9 @@ cbuffer ConstantBuffer : register(b0)
 	float4 lightDir[3];
 	float4 lightCol[3];
 	float4 outputCol;
+	float3 pad;
 	float pointRad;
+	float3 pad2;
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[3];
@@ -44,14 +46,17 @@ float4 main(PSVertex _input) : SV_TARGET
 
 	//apply spot light (light[2])
 	float3 spotDir = normalize(lightDir[2] - _input.worldPos);
+	//float3 coneDir3 = float3(coneDir.x, coneDir.y, coneDir.z);
 	float surfaceRatio = saturate(dot(-spotDir, coneDir));
-	float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
+	//float spotFactor = (surfaceRatio > coneRatio) ? 1 : 0;
+	atten = 1.0f - saturate((coneRatio - surfaceRatio) / (coneRatio - 0.8f));
 	lightRatio = saturate(dot(spotDir, _input.normal));
-	atten = 1.0f - saturate((coneRatio - surfaceRatio) / ( coneRatio - 0.25f));
-	color += spotFactor* lightRatio * lightCol[2] *atten;
+	color +=  lightRatio * lightCol[2] *atten;
+
+	/*float4 col2 = color;
+	return col2;*/
 
 	//apply specular
-
 	
 	
 	//texture object
