@@ -206,7 +206,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			Cube(1);
 			Plane(2);
 			LoadOBJVerts("rock.txt", 3);
-			LoadOBJVerts("sword.txt", 4);
+			LoadOBJVerts("sword1.txt", 4);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -219,7 +219,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//rock
 			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_Spec_8BB.dds", (ID3D11Resource**)&rockTex, &rockView);
 			//sword 
-			hr = CreateDDSTextureFromFile(myDevice, L"Diaz_Sword_D.dds", (ID3D11Resource**)&swordTex, &swordView);
+			hr = CreateDDSTextureFromFile(myDevice, L"PlayerWeapon_Diffuse.dds", (ID3D11Resource**)&swordTex, &swordView);
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -1128,25 +1128,27 @@ void LetsDrawSomeStuff::Render()
 			myContext->DrawIndexed(indNums[3], 0, 0);
 
 			////draw sword
-			//worldM = XMMatrixIdentity();
-			//worldCpy = worldM;
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
 			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, 2.2f, -8), worldCpy);
-			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.1f, 0.1f, 0.1f), worldCpy);
-			//worldM = worldCpy;
-			//conBuff.world = XMMatrixTranspose(worldM);
-			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
-			//tempVB[0] = vBuffer[4];
-			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-			//myContext->IASetIndexBuffer(iBuffer[4], DXGI_FORMAT_R32_UINT, 0);
-			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			//myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->VSSetShader(vShader, 0, 0);
-			//srvs[0] = { swordView };
-			//myContext->PSSetShaderResources(0, 1, srvs);
-			//myContext->PSSetSamplers(0, 1, &SamplerLinear);
-			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->PSSetShader(pSolid, 0, 0);
-			//myContext->DrawIndexed(indNums[4], 0, 0);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0, -3.2f, -3.1f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[4];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[4], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = { swordView };
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSpec, 0, 0);
+			myContext->DrawIndexed(indNums[4], 0, 0);
 
 			if (_DEBUG)
 			{
