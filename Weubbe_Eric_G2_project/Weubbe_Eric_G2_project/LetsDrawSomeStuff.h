@@ -24,6 +24,9 @@
 #include "PS_SkyBox.csh"
 #include "PSSpec.csh"
 #include "PSReflect.csh"
+#include "VSGeo.csh"
+#include "PSGeo.csh"
+#include "MyGeo.csh"
 
 
 using namespace DirectX;
@@ -35,7 +38,7 @@ using namespace SYSTEM;
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
-#define NUM_OBJECTS 5
+#define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 3
 
@@ -65,11 +68,14 @@ class LetsDrawSomeStuff
 	//shader variables
 	ID3D11VertexShader* vShader = nullptr; //HLSL (high level shading laguage)
 	ID3D11VertexShader* InstanceVshader = nullptr;
+	ID3D11VertexShader* GeoVshader = nullptr;
 	ID3D11PixelShader* pShader = nullptr; //HLSL
 	ID3D11PixelShader* pSolid = nullptr;
 	ID3D11PixelShader* pSkyBox = nullptr;
 	ID3D11PixelShader* pSpec = nullptr;
 	ID3D11PixelShader* pSReflect = nullptr;
+	ID3D11PixelShader* pSGeo = nullptr;
+	ID3D11GeometryShader* GShader1 = nullptr;
 
 	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -150,6 +156,8 @@ class LetsDrawSomeStuff
 	void Cube(UINT _arrPos);
 	//generates a plane and passes it to appropriate ind and view lists
 	void Plane(UINT _arrPos);
+	//rand verts for mist
+	void Mist(UINT _arrPos);
 	//process vertex information from OBJ file
 	void LoadOBJVerts(const char* _filename, UINT _arrPos);
 	void Compactify(UINT _arrPos);
@@ -209,6 +217,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			Plane(2);
 			LoadOBJVerts("rock.txt", 3);
 			LoadOBJVerts("sword1.txt", 4);
+			Mist(5);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -288,11 +297,14 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//SHADERS********************************************************************************
 			hr = myDevice->CreateVertexShader(MyVShader, sizeof(MyVShader), nullptr, &vShader);
 			hr = myDevice->CreateVertexShader(VS_Instanced, sizeof(VS_Instanced), nullptr, &InstanceVshader);
+			hr = myDevice->CreateVertexShader(VSGeo, sizeof(VSGeo), nullptr, &GeoVshader);
 			hr = myDevice->CreatePixelShader(MyPShader, sizeof(MyPShader), nullptr, &pShader);
 			hr = myDevice->CreatePixelShader(PSSOLID, sizeof(PSSOLID), nullptr, &pSolid);
 			hr = myDevice->CreatePixelShader(PS_SkyBox, sizeof(PS_SkyBox), nullptr, &pSkyBox);
 			hr = myDevice->CreatePixelShader(PSSpec, sizeof(PSSpec), nullptr, &pSpec);
 			hr = myDevice->CreatePixelShader(PSReflect, sizeof(PSReflect), nullptr, &pSReflect);
+			hr = myDevice->CreatePixelShader(PSGeo, sizeof(PSGeo), nullptr, &pSGeo);
+			hr = myDevice->CreateGeometryShader(MyGeo, sizeof(MyGeo), nullptr, &GShader1);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -585,6 +597,21 @@ void LetsDrawSomeStuff::Plane(UINT _arrPos)
 	//indNums[_arrPos] = indCount;
 }
 
+//rand verts for mist
+void LetsDrawSomeStuff::Mist(UINT _arrPos)
+{
+	Vertex* temp = new Vertex[500];
+	indices[_arrPos] = new UINT[500];
+	indNums[_arrPos] = 500;
+	for (int i = 0; i < 500; ++i)
+	{
+		temp[i].pos = XMFLOAT4(rand() % 10, rand() % 5, rand() % 10, 1);
+		indices[_arrPos][i] = i;
+	}
+	vertNums[_arrPos] = 500;
+	objs[_arrPos] = temp;
+}
+
 //process vertex information from OBJ file
 void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 {
@@ -814,11 +841,14 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	vLayout->Release();
 	vShader->Release();
 	InstanceVshader->Release();
+	GeoVshader->Release();
 	pShader->Release();
 	pSolid->Release();
 	pSkyBox->Release();
 	pSpec->Release();
 	pSReflect->Release();
+	pSGeo->Release();
+	GShader1->Release();
 	treeTex->Release();
 	treeView->Release();
 	grassTex->Release();

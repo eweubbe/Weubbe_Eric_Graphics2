@@ -83,6 +83,12 @@
     <FxCompile Include="PSReflect.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="VSGeo.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PSGeo.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LetsDrawSomeStuff.h">
