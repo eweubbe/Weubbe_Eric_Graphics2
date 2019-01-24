@@ -40,7 +40,7 @@ using namespace SYSTEM;
 #define EPSILON 0.00001f
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
-#define TREE_INSTANCES 8
+#define TREE_INSTANCES 16
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -333,9 +333,17 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-8.0f, 0.0f, -4.0f), XMMatrixIdentity());
 			treePos[3] = XMMatrixMultiply(XMMatrixTranslation(-14.0f, 0.0f, 6.0f), XMMatrixIdentity());
 			treePos[4] = XMMatrixMultiply(XMMatrixTranslation(10.0f, 0.0f, -12.0f), XMMatrixIdentity());
-			treePos[5] = XMMatrixMultiply(XMMatrixTranslation(7.0f, 0.0f, 8.0f), XMMatrixIdentity());
+			treePos[5] = XMMatrixMultiply(XMMatrixTranslation(17.0f, 0.0f, 8.0f), XMMatrixIdentity());
 			treePos[6] = XMMatrixMultiply(XMMatrixTranslation(15.0f, 0.0f, 18.0f), XMMatrixIdentity());
-			treePos[7] = XMMatrixMultiply(XMMatrixTranslation(-11.0f, 0.0f, 16.0f), XMMatrixIdentity());
+			treePos[7] = XMMatrixMultiply(XMMatrixTranslation(-19.0f, 0.0f, -3.0f), XMMatrixIdentity());
+			treePos[8] = XMMatrixMultiply(XMMatrixTranslation(27.0f, 0.0f, -18.0f), XMMatrixIdentity());
+			treePos[9] = XMMatrixMultiply(XMMatrixTranslation(22.0f, 0.0f, -2.0f), XMMatrixIdentity());
+			treePos[10] = XMMatrixMultiply(XMMatrixTranslation(-12.0f, 0.0f, -27.0f), XMMatrixIdentity());
+			treePos[11] = XMMatrixMultiply(XMMatrixTranslation(-22.0f, 0.0f, -19.0f), XMMatrixIdentity());
+			treePos[12] = XMMatrixMultiply(XMMatrixTranslation(2.0f, 0.0f, -20.0f), XMMatrixIdentity());
+			treePos[13] = XMMatrixMultiply(XMMatrixTranslation(-15.0f, 0.0f, -14.0f), XMMatrixIdentity());
+			treePos[14] = XMMatrixMultiply(XMMatrixTranslation(21.0f, 0.0f, 24.0f), XMMatrixIdentity());
+			treePos[15] = XMMatrixMultiply(XMMatrixTranslation(-17.0f, 0.0f, 20.0f), XMMatrixIdentity());
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);

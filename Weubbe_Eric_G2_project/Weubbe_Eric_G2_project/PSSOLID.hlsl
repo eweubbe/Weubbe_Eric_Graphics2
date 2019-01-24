@@ -21,7 +21,7 @@ cbuffer ConstantBuffer : register(b0)
 	float3 pad2;
 	float coneRatio;
 	float4 coneDir;
-	matrix TreeInstPositions[3];
+	matrix TreeInstPositions[16];
 }
 
 float4 main(PSVertex _input) : SV_TARGET
