@@ -12,6 +12,9 @@ cbuffer ConstantBuffer : register(b0)
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[16];
+	float4 camPos;
+	float2 pad3;
+	float2 PowInt;
 }
 
 float4 main(float4 inPos[1] : SV_POSITION) : SV_TARGET

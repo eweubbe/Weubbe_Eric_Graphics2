@@ -22,6 +22,9 @@ cbuffer ConstantBuffer : register(b0)
 	float coneRatio;
 	float4 coneDir;
 	matrix TreeInstPositions[16];
+	float4 camPos;
+	float2 pad3;
+	float2 PowInt;
 }
 
 texture2D tree : register(t0);
@@ -51,14 +54,27 @@ float4 main(PSVertex _input) : SV_TARGET
 	color += lightRatio * lightCol[2] * atten;
 
 	//apply specular
-	float3 viewDir = normalize(_input.pos - _input.worldPos);
-	float3 halfVec = normalize((spotDir) - viewDir);
-	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 2), 0);
-	color += lightCol[2] * intensity * 25;
+	/*float3 viewDir = normalize(camPos - _input.worldPos);
+	float3 halfVec = normalize((spotDir) + viewDir);
+	float intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), PowInt.x), 0);
+	color += lightCol[2] * intensity * PowInt.y;
 
-	halfVec = normalize((lightDir[0])-viewDir);
-	intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), 2), 0);
-	color += lightCol[0] * intensity * 25;
+	halfVec = normalize((lightDir[0])+viewDir);
+	intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), PowInt.x), 0);
+	color += lightCol[0] * intensity * PowInt.y;*/
+
+	float3 viewDir = normalize((float3)camPos - (float3)_input.worldPos);
+	float3 lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
+	float3 reflection = reflect(lightDirection, (float3)_input.normal);
+	float fSpec = saturate(dot(reflection, viewDir));
+	fSpec = pow(fSpec, PowInt.x);
+	color += lightCol[2] * fSpec * PowInt.y;
+
+	lightDirection = (float3)-lightDir[0];
+	reflection = reflect(lightDirection, (float3)_input.normal);
+	fSpec = saturate(dot(reflection, viewDir));
+	fSpec = pow(fSpec, PowInt.x);
+	color += lightCol[0] * fSpec * PowInt.y;
 
 	//texture object
 	color *= tree.Sample(treeFilter, _input.uv);

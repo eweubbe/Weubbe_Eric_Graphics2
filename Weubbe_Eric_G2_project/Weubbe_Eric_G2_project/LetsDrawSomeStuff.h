@@ -125,6 +125,9 @@ class LetsDrawSomeStuff
 		float coneRatio; //cone light ratio
 		XMFLOAT4 coneDir; //direction of cone light
 		XMMATRIX TreeInstPositions[TREE_INSTANCES]; // array of position matrices for instanced trees
+		XMFLOAT4 camPos;
+		XMFLOAT2 pad3;
+		XMFLOAT2 PowInt;
 	};
 
 	Vertex* objs[NUM_OBJECTS];
@@ -1010,8 +1013,7 @@ void LetsDrawSomeStuff::Render()
 				startingCursorPos.y = currCursorPos.y;
 			}
 		}
-
-		//rotate object
+		XMFLOAT4 cameraPos = { viewM.r[3].m128_f32[0], viewM.r[3].m128_f32[1], viewM.r[3].m128_f32[2], viewM.r[3].m128_f32[3] };
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
@@ -1048,7 +1050,7 @@ void LetsDrawSomeStuff::Render()
 
 			//update constant buffer
 			ConstantBuffer conBuff;
-			//conBuff.world = XMMatrixTranspose(worldM);
+			conBuff.camPos = cameraPos;
 			conBuff.view = XMMatrixTranspose(viewM);
 			conBuff.projection = XMMatrixTranspose(projM);
 			for (int i = 0; i < NUM_LIGHTS; ++i)
@@ -1118,6 +1120,7 @@ void LetsDrawSomeStuff::Render()
 			{
 				conBuff.TreeInstPositions[i] = treePos[i];
 			}
+			conBuff.PowInt = XMFLOAT2(2.0f, 0.5f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[0];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
@@ -1129,7 +1132,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pShader, 0, 0);
+			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexedInstanced(indNums[0], TREE_INSTANCES, 0, 0, 0);
 
 
@@ -1157,9 +1160,10 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-1.5f, 0, -3), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
+			conBuff.PowInt = XMFLOAT2(4.0f, 5.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[3];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
@@ -1180,10 +1184,11 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
+			//conBuff.PowInt = XMFLOAT2(500.0f, 5.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pShader, 0, 0);
+			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexed(indNums[3], 0, 0);
 
 			////draw sword
