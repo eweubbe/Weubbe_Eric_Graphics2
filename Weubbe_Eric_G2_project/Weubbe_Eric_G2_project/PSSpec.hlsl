@@ -63,6 +63,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), PowInt.x), 0);
 	color += lightCol[0] * intensity * PowInt.y;*/
 
+	//apply specular
 	float3 viewDir = normalize((float3)camPos - (float3)_input.worldPos);
 	float3 lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
 	float3 reflection = reflect(lightDirection, (float3)_input.normal);

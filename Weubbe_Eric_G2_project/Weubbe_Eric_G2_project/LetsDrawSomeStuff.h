@@ -633,6 +633,9 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 {
 	// set up output console for debugging
 	AllocConsole();
+	
+	if (_filename == "rock.txt")
+		modelScale = 0.2f;
 
 	//dynamic arrays to temporarily store vertex information
 	DynArray<XMFLOAT4> posIn;
@@ -779,6 +782,7 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 		//Compactify(_obj, _indList);
 	}
 	inFile.close();
+	modelScale = 1.0f;
 }
 
 //void LetsDrawSomeStuff::Compactify(Vertex** _obj, UINT** _indList)
@@ -1160,7 +1164,6 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-1.5f, 0, -3), worldCpy);
-			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.PowInt = XMFLOAT2(4.0f, 5.0f);
@@ -1181,7 +1184,6 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, 0, -3), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			//conBuff.PowInt = XMFLOAT2(500.0f, 5.0f);
