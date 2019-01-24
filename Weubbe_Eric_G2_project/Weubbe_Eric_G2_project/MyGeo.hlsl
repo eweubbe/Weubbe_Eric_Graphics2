@@ -14,6 +14,11 @@ cbuffer ConstantBuffer : register(b0)
 	matrix TreeInstPositions[3];
 }
 
+struct GSVertex
+{
+	float4 pos[1] :SV_POSITION;
+};
+
 struct GSOutput
 {
 	float4 pos : SV_POSITION;

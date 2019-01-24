@@ -40,7 +40,7 @@ using namespace SYSTEM;
 #define EPSILON 0.00001f
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
-#define TREE_INSTANCES 3
+#define TREE_INSTANCES 8
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -330,7 +330,12 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			//set instanced tree positions
 			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(8.0f, 0.0f, 0.0f), XMMatrixIdentity());
 			treePos[1] = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0.0f, 20.0f), XMMatrixIdentity());
-			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-8.0f, 0.0f, 0.0f), XMMatrixIdentity());
+			treePos[2] = XMMatrixMultiply(XMMatrixTranslation(-8.0f, 0.0f, -4.0f), XMMatrixIdentity());
+			treePos[3] = XMMatrixMultiply(XMMatrixTranslation(-14.0f, 0.0f, 6.0f), XMMatrixIdentity());
+			treePos[4] = XMMatrixMultiply(XMMatrixTranslation(10.0f, 0.0f, -12.0f), XMMatrixIdentity());
+			treePos[5] = XMMatrixMultiply(XMMatrixTranslation(7.0f, 0.0f, 8.0f), XMMatrixIdentity());
+			treePos[6] = XMMatrixMultiply(XMMatrixTranslation(15.0f, 0.0f, 18.0f), XMMatrixIdentity());
+			treePos[7] = XMMatrixMultiply(XMMatrixTranslation(-11.0f, 0.0f, 16.0f), XMMatrixIdentity());
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
@@ -952,7 +957,7 @@ void LetsDrawSomeStuff::Render()
 				pointLightInc = -pointLightInc;
 
 			//update direct light direction
-			direcDirec.x -= direcInc;
+			//direcDirec.x -= direcInc;
 			if ((direcDirec.x <= -0.9f) | (direcDirec.x >= 0.9f))
 				direcInc = -direcInc;
 
@@ -1117,7 +1122,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
-			myContext->DrawIndexedInstanced(indNums[0], 3, 0, 0, 0);
+			myContext->DrawIndexedInstanced(indNums[0], TREE_INSTANCES, 0, 0, 0);
 
 
 			//draw plane
@@ -1197,29 +1202,52 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pSReflect, 0, 0);
 			myContext->DrawIndexed(indNums[4], 0, 0);
 
-			if (_DEBUG)
-			{
-				//draw cube for spot light pos
-				worldM = XMMatrixIdentity();
-				worldCpy = worldM;
-				XMVECTOR spotPos = { LightingDirs[2].x, LightingDirs[2].y, LightingDirs[2].z, LightingDirs[2].w };
-				worldCpy.r[3] = spotPos;
-				worldCpy = XMMatrixMultiply(XMMatrixScaling(0.001f, 0.001f, 0.001f), worldCpy);
-				worldM = worldCpy;
-				conBuff.world = XMMatrixTranspose(worldM);
-				myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
-				tempVB[0] = vBuffer[1];
-				myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-				myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
-				myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-				myContext->VSSetShader(vShader, 0, 0);
-				myContext->PSSetShaderResources(0, 1, srvs);
-				myContext->PSSetSamplers(0, 1, &SamplerLinear);
-				myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-				myContext->PSSetShader(pSolid, 0, 0);
-				myContext->DrawIndexed(indNums[1], 0, 0);
-			}
+			//draw mist
+			//worldM = XMMatrixIdentity();
+			//worldCpy = worldM;
+			//worldM = worldCpy;
+			//conBuff.world = XMMatrixTranspose(worldM);
+			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			//tempVB[0] = vBuffer[5];
+			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			//myContext->IASetIndexBuffer(iBuffer[5], DXGI_FORMAT_R32_UINT, 0);
+			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+			////vertex shader
+			//myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->VSSetShader(GeoVshader, 0, 0);
+			////geo shader
+			//myContext->GSGetConstantBuffers(0, 1, &cBuffer);
+			//myContext->GSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->GSSetShader(GShader1, 0, 0);
+			////pixel shader
+			//myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->PSSetShader(pSGeo, 0, 0);
+			//myContext->Draw(vertNums[5], 0);
+
+			//if (_DEBUG)
+			//{
+			//	//draw cube for spot light pos
+			//	worldM = XMMatrixIdentity();
+			//	worldCpy = worldM;
+			//	XMVECTOR spotPos = { LightingDirs[2].x, LightingDirs[2].y, LightingDirs[2].z, LightingDirs[2].w };
+			//	worldCpy.r[3] = spotPos;
+			//	worldCpy = XMMatrixMultiply(XMMatrixScaling(0.001f, 0.001f, 0.001f), worldCpy);
+			//	worldM = worldCpy;
+			//	conBuff.world = XMMatrixTranspose(worldM);
+			//	myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			//	tempVB[0] = vBuffer[1];
+			//	myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			//	myContext->IASetIndexBuffer(iBuffer[1], DXGI_FORMAT_R32_UINT, 0);
+			//	myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			//	myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			//	myContext->VSSetShader(vShader, 0, 0);
+			//	myContext->PSSetShaderResources(0, 1, srvs);
+			//	myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			//	myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			//	myContext->PSSetShader(pSolid, 0, 0);
+			//	myContext->DrawIndexed(indNums[1], 0, 0);
+			//}
 			
 
 			/////////////////////////////////////////////////////////////////////////////

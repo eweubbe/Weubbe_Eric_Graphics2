@@ -22,17 +22,21 @@ struct InputVertex
 	float4 normal : NORMAL;
 };
 
-struct GSVertex
-{
-	float4 pos :SV_POSITION;
-};
+//struct GSVertex
+//{
+//	float4 pos[1] :SV_POSITION;
+//};
 
-GSVertex main(InputVertex _input)
+void main(InputVertex _input, out float4 result[1] : SV_POSITION)
 {
-	GSVertex output = (GSVertex)0;
-	
-	//position
-	output.pos = mul(_input.pos, world);
+	//GSVertex output = (GSVertex)0;
+	//
+	////position
+	//output.pos[0] = mul(_input.pos, world);
 
-	return output;
+	//return output;
+
+	float4 pos[] = { mul(_input.pos, world) };
+
+	result = pos;
 }
