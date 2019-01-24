@@ -625,8 +625,17 @@ void LetsDrawSomeStuff::Mist(UINT _arrPos)
 	indNums[_arrPos] = size;
 	for (int i = 0; i < size; ++i)
 	{
-		temp[i].pos = XMFLOAT4(rand() % 20, rand() % 3 + 1.5f, rand() % 20, 1);
+		temp[i].pos = XMFLOAT4(rand() % 30, rand() % 3 + 1.5f, rand() % 30, 1);
+		if ((int)temp[i].pos.x % 2 == 0)
+			temp[i].pos.x = -temp[i].pos.x;
+		if ((int)temp[i].pos.z % 2 == 0)
+			temp[i].pos.z = -temp[i].pos.z;
 		indices[_arrPos][i] = i;
+
+		temp[i].normal = XMFLOAT4(1 / (rand() % 10 + 1), 1 / (rand() % 10 + 1), 1 / (rand() % 10 + 1), 0);
+
+		/*if (i % 2 == 0)
+			temp[i].normal = -temp[i].normal;*/
 	}
 	vertNums[_arrPos] = size;
 	objs[_arrPos] = temp;
