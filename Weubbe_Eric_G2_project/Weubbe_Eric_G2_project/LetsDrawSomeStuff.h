@@ -27,6 +27,7 @@
 #include "VSGeo.csh"
 #include "PSGeo.csh"
 #include "MyGeo.csh"
+#include <ctime>
 
 
 using namespace DirectX;
@@ -189,6 +190,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			{
 				float x = 1;
 			}
+
+			srand((unsigned int)time(0));
 
 			// Grab handles to all DX11 base interfaces
 			mySurface->GetDevice((void**)&myDevice);
@@ -621,7 +624,7 @@ void LetsDrawSomeStuff::Mist(UINT _arrPos)
 	indNums[_arrPos] = 500;
 	for (int i = 0; i < 500; ++i)
 	{
-		temp[i].pos = XMFLOAT4(rand() % 10, rand() % 5, rand() % 10, 1);
+		temp[i].pos = XMFLOAT4(rand() % 20, rand() % 5, rand() % 20, 1);
 		indices[_arrPos][i] = i;
 	}
 	vertNums[_arrPos] = 500;
@@ -1102,7 +1105,6 @@ void LetsDrawSomeStuff::Render()
 			myContext->RSSetState(rState);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			//geometry shader
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
@@ -1152,7 +1154,6 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			//geometry shader
 			srvs[0] = grassView;
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
@@ -1180,7 +1181,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexed(indNums[3], 0, 0);
-			//draw 2nd rock w/o spec
+			//draw 2nd rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, 0, -3), worldCpy);
