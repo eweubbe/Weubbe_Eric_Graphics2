@@ -19,36 +19,51 @@ cbuffer ConstantBuffer : register(b0)
 
 struct GSVertex
 {
-	float4 pos[1] :SV_POSITION;
+	float4 pos: POSITION;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD1;
+	float4 normal : NORMAL;
 };
 
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD2;
+	float4 normal : NORMAL;
 };
 
 [maxvertexcount(4)]
-void main(point float4 _input[1]: SV_POSITION, inout TriangleStream < GSOutput > output)
+void main(point GSVertex _input[1], inout TriangleStream < GSOutput > output)
 {
-	GSOutput verts[4] =
+	GSOutput verts[4];
+
+	//positions
+	verts[0].pos = _input[0].pos;
+
+	verts[1].pos = _input[0].pos;
+	verts[1].pos.y = _input[0].pos.x - 0.5f;
+
+	verts[2].pos = _input[0].pos;
+	verts[2].pos.x = _input[0].pos.y - 0.5f;
+
+	verts[3].pos = _input[0].pos;
+	verts[3].pos.x = _input[0].pos.x - 0.5f;
+	verts[3].pos.y = _input[0].pos.y - 0.5f;
+
+	//UVs
+	verts[0].uv = float2(1, 0);
+	verts[1].uv = float2(0, 0);
+	verts[2].uv = float2(1, 1);
+	verts[3].uv = float2(0, 1);
+
+	for (int i = 0; i < 4; ++i)
 	{
-		float4(0,0,0,1),
-		float4(0,0,0,1),
-		float4(0,0,0,1),
-		float4(0,0,0,1)
-	};
+		verts[i].pos = mul(verts[i].pos, world);
 
-	verts[0].pos = _input[0];
-
-	verts[1].pos = _input[0];
-	verts[1].pos.y = _input[0].y - 0.5f;
-
-	verts[2].pos = _input[0];
-	verts[2].pos.x = _input[0].x - 0.5f;
-
-	verts[3].pos = _input[0];
-	verts[3].pos.x = _input[0].x - 0.5f;
-	verts[3].pos.y = _input[0].y - 0.5f;
+		//normals
+		verts[i].normal = mul(verts[i].normal, world);
+	}
 
 	matrix mVP = mul(view, projection);
 

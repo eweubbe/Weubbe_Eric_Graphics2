@@ -1166,7 +1166,7 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-1.5f, 0, -3), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
-			conBuff.PowInt = XMFLOAT2(4.0f, 5.0f);
+			conBuff.PowInt = XMFLOAT2(6.0f, 2.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[3];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
@@ -1186,7 +1186,6 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, 0, -3), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
-			//conBuff.PowInt = XMFLOAT2(500.0f, 5.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
@@ -1197,12 +1196,13 @@ void LetsDrawSomeStuff::Render()
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
-			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
-			//worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -5.5f, 0.0f), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixScaling(2.2f, 1.0f, 2.2f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -10.5f, 0.0f), worldCpy);
+			//worldCpy = XMMatrixMultiply(XMMatrixScaling(12.2f, 1.0f, 2.2f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
+			conBuff.PowInt = XMFLOAT2(15.0f, 0.5f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[4];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
@@ -1218,27 +1218,31 @@ void LetsDrawSomeStuff::Render()
 			myContext->DrawIndexed(indNums[4], 0, 0);
 
 			//draw mist
-			//worldM = XMMatrixIdentity();
-			//worldCpy = worldM;
-			//worldM = worldCpy;
-			//conBuff.world = XMMatrixTranspose(worldM);
-			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
-			//tempVB[0] = vBuffer[5];
-			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-			//myContext->IASetIndexBuffer(iBuffer[5], DXGI_FORMAT_R32_UINT, 0);
-			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-			////vertex shader
-			//myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->VSSetShader(GeoVshader, 0, 0);
-			////geo shader
-			//myContext->GSGetConstantBuffers(0, 1, &cBuffer);
-			//myContext->GSSetSamplers(0, 1, &SamplerLinear);
-			//myContext->GSSetShader(GShader1, 0, 0);
-			////pixel shader
-			//myContext->PSSetSamplers(0, 1, &SamplerLinear);
-			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->PSSetShader(pSGeo, 0, 0);
-			//myContext->Draw(vertNums[5], 0);
+			worldM = XMMatrixIdentity();
+			/*worldCpy = worldM;
+			worldM = worldCpy;*/
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[5];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[5], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+			//vertex shader
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(GeoVshader, 0, 0);
+			//geo shader
+			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->GSSetSamplers(0, 1, &SamplerLinear);
+			myContext->GSSetShader(GShader1, 0, 0);
+			//pixel shader
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSGeo, 0, 0);
+			myContext->Draw(vertNums[5], 0);
+
+			//clear geo shader
+			ID3D11GeometryShader* off = nullptr;
+			myContext->GSSetShader(off, 0, 0);
 
 			//if (_DEBUG)
 			//{
