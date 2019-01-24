@@ -42,14 +42,14 @@ void main(point GSVertex _input[1], inout TriangleStream < GSOutput > output)
 	verts[0].pos = _input[0].pos;
 
 	verts[1].pos = _input[0].pos;
-	verts[1].pos.y = _input[0].pos.x - 0.5f;
+	verts[1].pos.z = _input[0].pos.z - 0.5f;
 
 	verts[2].pos = _input[0].pos;
-	verts[2].pos.x = _input[0].pos.y - 0.5f;
+	verts[2].pos.x = _input[0].pos.x - 0.5f;
 
 	verts[3].pos = _input[0].pos;
 	verts[3].pos.x = _input[0].pos.x - 0.5f;
-	verts[3].pos.y = _input[0].pos.y - 0.5f;
+	verts[3].pos.z = _input[0].pos.z - 0.5f;
 
 	//UVs
 	verts[0].uv = float2(1, 0);

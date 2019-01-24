@@ -619,15 +619,16 @@ void LetsDrawSomeStuff::Plane(UINT _arrPos)
 //rand verts for mist
 void LetsDrawSomeStuff::Mist(UINT _arrPos)
 {
-	Vertex* temp = new Vertex[500];
-	indices[_arrPos] = new UINT[500];
-	indNums[_arrPos] = 500;
-	for (int i = 0; i < 500; ++i)
+	UINT size = 1000;
+	Vertex* temp = new Vertex[size];
+	indices[_arrPos] = new UINT[size];
+	indNums[_arrPos] = size;
+	for (int i = 0; i < size; ++i)
 	{
-		temp[i].pos = XMFLOAT4(rand() % 20, rand() % 5, rand() % 20, 1);
+		temp[i].pos = XMFLOAT4(rand() % 20, rand() % 3 + 1.5f, rand() % 20, 1);
 		indices[_arrPos][i] = i;
 	}
-	vertNums[_arrPos] = 500;
+	vertNums[_arrPos] = size;
 	objs[_arrPos] = temp;
 }
 
