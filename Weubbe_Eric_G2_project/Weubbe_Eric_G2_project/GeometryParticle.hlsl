@@ -53,6 +53,9 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 	tempPos = mul(tempPos, world);
 	tempNorm = mul(tempNorm, world);
 
+	//convert them into view space
+	tempPos = mul(tempPos, view);
+
 	//build quad around view space position
 	verts[0].pos = tempPos;
 
@@ -66,13 +69,10 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 	verts[3].pos.x = tempPos.x - 0.1f;
 	verts[3].pos.y = tempPos.y - 0.1f;
 
-	////convert them into view space
-	//tempPos = mul(tempPos, view);
-
-	for (uint j = 0; j < 4; ++j)
+	/*for (uint j = 0; j < 4; ++j)
 	{
 		verts[j].pos = mul(verts[j].pos, view);
-	}
+	}*/
 		
 	
 
