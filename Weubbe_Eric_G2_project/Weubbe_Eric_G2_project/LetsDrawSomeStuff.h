@@ -47,6 +47,7 @@ using namespace SYSTEM;
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
+#define MIST_NUMS 10000
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -107,7 +108,9 @@ class LetsDrawSomeStuff
 	ID3D11Texture2D* swordTex = nullptr;
 	ID3D11ShaderResourceView* swordView = nullptr;
 	//particle
-	ID3D11ShaderResourceView* mistView = nullptr;
+	ID3D11ShaderResourceView* mistSRV = nullptr;
+	ID3D11UnorderedAccessView* mistUAV = nullptr;
+	ID3D11Resource* mistRes = structBuffer;
 
 	//matrices
 	XMMATRIX worldM;
@@ -155,7 +158,7 @@ class LetsDrawSomeStuff
 	UINT* indices[NUM_OBJECTS];
 	int indNums[NUM_OBJECTS];
 	float modelScale = 1.0f;
-	Particle mist[10000];
+	Particle mist[MIST_NUMS];
 
 
 	//timer variables
@@ -183,6 +186,8 @@ class LetsDrawSomeStuff
 	void Plane(UINT _arrPos);
 	//rand verts for mist
 	void Mist(UINT _arrPos);
+	//populate particle structure info
+	void Mist2();
 	//process vertex information from OBJ file
 	void LoadOBJVerts(const char* _filename, UINT _arrPos);
 	void Compactify(UINT _arrPos);
@@ -245,6 +250,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			LoadOBJVerts("rock.txt", 3);
 			LoadOBJVerts("sword1.txt", 4);
 			Mist(5);
+			Mist2();
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -305,12 +311,29 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreateBuffer(&bDesc, nullptr, &cBuffer);
 
 			//STRUCTURED BUFFER
-			bDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+			bDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
 			bDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 			bDesc.StructureByteStride = sizeof(Particle);
-			bDesc.ByteWidth = sizeof(Particle) * 10000;
+			bDesc.ByteWidth = sizeof(Particle) * MIST_NUMS;
 			subData.pSysMem = mist;
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &structBuffer);
+
+			//Particle Views
+			//srv
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+			ZeroMemory(&srvDesc, sizeof(srvDesc));
+			srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+			srvDesc.Buffer.ElementOffset = 0;
+			srvDesc.Buffer.NumElements = MIST_NUMS;
+			hr = myDevice->CreateShaderResourceView(structBuffer, &srvDesc, &mistSRV);
+			//uav
+			D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+			ZeroMemory(&uavDesc, sizeof(uavDesc));
+			uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+			uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+			uavDesc.Buffer.NumElements = MIST_NUMS;
+			hr = myDevice->CreateUnorderedAccessView(structBuffer, &uavDesc, &mistUAV);
 
 
 			//MATRICES******************************************************************************
@@ -676,6 +699,21 @@ void LetsDrawSomeStuff::Mist(UINT _arrPos)
 	objs[_arrPos] = temp;
 }
 
+//populate particle structure information
+void LetsDrawSomeStuff::Mist2()
+{
+	for (int i = 0; i < MIST_NUMS; ++i)
+	{
+		mist[i].pos = XMFLOAT4(rand() % 30, rand() % 3 + 1.5f, rand() % 30, 1);
+		if ((int)mist[i].pos.x % 2 == 0)
+			mist[i].pos.x = -mist[i].pos.x;
+		if ((int)mist[i].pos.z % 2 == 0)
+			mist[i].pos.z = -mist[i].pos.z;
+
+		mist[i].normal = XMFLOAT3(1 / (rand() % 10 + 1), 1 / (rand() % 10 + 1), 1 / (rand() % 10 + 1));
+	}
+}
+
 //process vertex information from OBJ file
 void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 {
@@ -932,7 +970,8 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	if(rockView) rockView->Release();
 	if(swordTex) swordTex->Release();
 	if(swordView) swordView->Release();
-	if(mistView) mistView->Release();
+	if(mistSRV) mistSRV->Release();
+	if(mistUAV) mistUAV->Release();
 	if(SamplerLinear) SamplerLinear->Release();
 
 	//delete dynamic memory
