@@ -27,8 +27,13 @@
 #include "VSGeo.csh"
 #include "PSGeo.csh"
 #include "MyGeo.csh"
-#include <ctime>
 
+#include "ComputeParticle.csh"
+#include "VertexParticle.csh"
+#include "PixelParticle.csh"
+#include "GeometryParticle.csh"
+
+#include <ctime>
 
 using namespace DirectX;
 using namespace std;
@@ -60,6 +65,7 @@ class LetsDrawSomeStuff
 	ID3D11Buffer* vBuffer[NUM_OBJECTS];
 	ID3D11Buffer* iBuffer[NUM_OBJECTS];
 	ID3D11Buffer* cBuffer = nullptr;
+	ID3D11Buffer* structBuffer = nullptr;
 	//descirbes what a vertex looks like to directx
 	ID3D11InputLayout* vLayout = nullptr;
 	//viewport
@@ -77,6 +83,11 @@ class LetsDrawSomeStuff
 	ID3D11PixelShader* pSReflect = nullptr;
 	ID3D11PixelShader* pSGeo = nullptr;
 	ID3D11GeometryShader* GShader1 = nullptr;
+	//particle shader variables
+	ID3D11VertexShader* VSpart = nullptr;
+	ID3D11PixelShader* PSpart = nullptr;
+	ID3D11GeometryShader* GSpart = nullptr;
+	ID3D11ComputeShader* CSpart = nullptr;
 
 	//TEXTURE
 	ID3D11SamplerState* SamplerLinear = nullptr;
@@ -95,6 +106,8 @@ class LetsDrawSomeStuff
 	//sword
 	ID3D11Texture2D* swordTex = nullptr;
 	ID3D11ShaderResourceView* swordView = nullptr;
+	//particle
+	ID3D11ShaderResourceView* mistView = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -109,6 +122,12 @@ class LetsDrawSomeStuff
 		XMFLOAT4 color;
 		XMFLOAT2 uv;
 		XMFLOAT4 normal;
+	};
+
+	struct Particle
+	{
+		XMFLOAT4 pos;
+		XMFLOAT3 normal;
 	};
 
 	//contains data for world, projection, and view matricies
@@ -136,6 +155,8 @@ class LetsDrawSomeStuff
 	UINT* indices[NUM_OBJECTS];
 	int indNums[NUM_OBJECTS];
 	float modelScale = 1.0f;
+	Particle mist[10000];
+
 
 	//timer variables
 	XTime timer;
@@ -283,6 +304,15 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			bDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			hr = myDevice->CreateBuffer(&bDesc, nullptr, &cBuffer);
 
+			//STRUCTURED BUFFER
+			bDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+			bDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+			bDesc.StructureByteStride = sizeof(Particle);
+			bDesc.ByteWidth = sizeof(Particle) * 10000;
+			subData.pSysMem = mist;
+			hr = myDevice->CreateBuffer(&bDesc, &subData, &structBuffer);
+
+
 			//MATRICES******************************************************************************
 			// Initialize the world matrix
 			worldM = XMMatrixIdentity();
@@ -311,6 +341,11 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreatePixelShader(PSReflect, sizeof(PSReflect), nullptr, &pSReflect);
 			hr = myDevice->CreatePixelShader(PSGeo, sizeof(PSGeo), nullptr, &pSGeo);
 			hr = myDevice->CreateGeometryShader(MyGeo, sizeof(MyGeo), nullptr, &GShader1);
+			//particle shaders
+			hr = myDevice->CreateVertexShader(VertexParticle, sizeof(VertexParticle), nullptr, &VSpart);
+			hr = myDevice->CreatePixelShader(PixelParticle, sizeof(PixelParticle), nullptr, &PSpart);
+			hr = myDevice->CreateGeometryShader(GeometryParticle, sizeof(GeometryParticle), nullptr, &GSpart);
+			hr = myDevice->CreateComputeShader(ComputeParticle, sizeof(ComputeParticle), nullptr, &CSpart);
 
 			//INPUT LAYOUT***************************************************************************
 			//input element descriptor, glues c++ vertex struct to hlsl vertex struct
@@ -870,29 +905,35 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 		vBuffer[i]->Release();
 	for (int i = 0; i < NUM_OBJECTS; ++i)
 		iBuffer[i]->Release();
-	cBuffer->Release();
-	vLayout->Release();
-	vShader->Release();
-	InstanceVshader->Release();
-	GeoVshader->Release();
-	pShader->Release();
-	pSolid->Release();
-	pSkyBox->Release();
-	pSpec->Release();
-	pSReflect->Release();
-	pSGeo->Release();
-	GShader1->Release();
-	treeTex->Release();
-	treeView->Release();
-	grassTex->Release();
-	grassView->Release();
-	skyTex->Release();
-	skyView->Release();
-	rockTex->Release();
-	rockView->Release();
-	swordTex->Release();
-	swordView->Release();
-	SamplerLinear->Release();
+	if(cBuffer) cBuffer->Release();
+	if(structBuffer) structBuffer->Release();
+	if(vLayout) vLayout->Release();
+	if(vShader) vShader->Release();
+	if(InstanceVshader) InstanceVshader->Release();
+	if(GeoVshader) GeoVshader->Release();
+	if(pShader) pShader->Release();
+	if(pSolid) pSolid->Release();
+	if(pSkyBox) pSkyBox->Release();
+	if(pSpec) pSpec->Release();
+	if(pSReflect) pSReflect->Release();
+	if(pSGeo) pSGeo->Release();
+	if(GShader1) GShader1->Release();
+	if(VSpart) VSpart->Release();
+	if(PSpart) PSpart->Release();
+	if(GSpart) GSpart->Release();
+	if(CSpart) CSpart->Release();
+	if(treeTex) treeTex->Release();
+	if(treeView) treeView->Release();
+	if(grassTex) grassTex->Release();
+	if(grassView) grassView->Release();
+	if(skyTex) skyTex->Release();
+	if(skyView) skyView->Release();
+	if(rockTex) rockTex->Release();
+	if(rockView) rockView->Release();
+	if(swordTex) swordTex->Release();
+	if(swordView) swordView->Release();
+	if(mistView) mistView->Release();
+	if(SamplerLinear) SamplerLinear->Release();
 
 	//delete dynamic memory
 	for (int i = 0; i < NUM_OBJECTS; ++i)

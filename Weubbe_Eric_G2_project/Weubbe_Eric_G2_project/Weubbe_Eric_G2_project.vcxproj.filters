@@ -57,6 +57,12 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{19951ed0-32e4-40b8-9e47-f7c5f37e83dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Particle">
+      <UniqueIdentifier>{c4c99ded-7e2c-401b-af54-b24bbe42582f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\BasicGeo">
+      <UniqueIdentifier>{8f20db27-2992-4fa2-903b-a7be9d6bf0ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="MyVShader.hlsl">
@@ -77,17 +83,29 @@
     <FxCompile Include="PSSpec.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="MyGeo.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="PSReflect.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="VSGeo.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="ComputeParticle.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="GeometryParticle.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexParticle.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelParticle.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="MyGeo.hlsl">
+      <Filter>Shaders\BasicGeo</Filter>
     </FxCompile>
     <FxCompile Include="PSGeo.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\BasicGeo</Filter>
+    </FxCompile>
+    <FxCompile Include="VSGeo.hlsl">
+      <Filter>Shaders\BasicGeo</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
