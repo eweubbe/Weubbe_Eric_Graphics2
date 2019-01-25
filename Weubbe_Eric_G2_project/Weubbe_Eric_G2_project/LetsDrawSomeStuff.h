@@ -47,7 +47,7 @@ using namespace SYSTEM;
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
-#define MIST_NUMS 10000
+#define MIST_NUMS 500
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -388,7 +388,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			pointPos = XMFLOAT4(-8.0f, 3.0f, 6.0f, 1.0f);
 			pointLightInc = 0.1f;
 			direcDirec = XMFLOAT4(0.777f, 0.877f, -0.33f, 1.0f);
-			direcInc = 0.005;
+			direcInc = 0.05;
 
 			//set instanced tree positions
 			treePos[0] = XMMatrixMultiply(XMMatrixTranslation(8.0f, 0.0f, 0.0f), XMMatrixIdentity());
@@ -1332,38 +1332,41 @@ void LetsDrawSomeStuff::Render()
 			//myContext->Draw(vertNums[5], 0);
 
 			//draw mist particle system
-			//worldM = XMMatrixIdentity();
-			//conBuff.world = XMMatrixTranspose(worldM);
-			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
-			//tempVB[0] = nullptr;
-			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-			//myContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
-			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-			////vs
-			//myContext->VSSetShader(VSpart, 0, 0);
-			////cs
+			worldM = XMMatrixIdentity();
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = nullptr;
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+			srvs[0] = { mistSRV };
+			uavs[0] = { mistUAV };
+			//vs
+			myContext->VSSetShader(VSpart, 0, 0);
+			//cs
 			//myContext->CSSetConstantBuffers(0, 1, &cBuffer);
-			//srvs[0] = { mistSRV };
 			//myContext->CSSetShaderResources(0, 1, srvs);
-			//uavs[0] = { mistUAV };
 			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0);
 			//myContext->CSSetShader(CSpart, 0, 0);
 			//myContext->Dispatch(1, 1, 1);
-			////gs
-			//myContext->GSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->GSSetShaderResources(0, 1, srvs);
-			//myContext->GSSetSamplers(0, 1, &SamplerLinear);
-			//myContext->GSSetShader(GSpart, 0, 0);
-			////ps
-			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->PSSetShader(PSpart, 0, 0);
-			////draw
-			//myContext->Draw(MIST_NUMS, 0);
+			//gs
+			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->GSSetShaderResources(0, 1, srvs);
+			myContext->GSSetSamplers(0, 1, &SamplerLinear);
+			myContext->GSSetShader(GSpart, 0, 0);
+			//ps
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(PSpart, 0, 0);
+			//draw
+			myContext->Draw(MIST_NUMS, 0);
 
 
 			//clear geo shader
 			ID3D11GeometryShader* off = nullptr;
 			myContext->GSSetShader(off, 0, 0);
+			//clear compute shader
+			ID3D11ComputeShader* offc = nullptr;
+			myContext->CSSetShader(offc, 0, 0);
 
 			//if (_DEBUG)
 			//{
