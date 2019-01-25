@@ -17,12 +17,17 @@ cbuffer ConstantBuffer : register(b0)
 	float2 PowInt;
 }
 
-struct GSVertex
+//structure in buffer
+struct Particle
 {
-	float4 pos: POSITION;
-	float4 color : COLOR;
-	float2 uv : TEXCOORD1;
-	float4 normal : NORMAL;
+	float4 pos;
+	float3 norm;
+};
+
+//shader doesn't need input, so pass in empty struct
+struct GSin
+{
+
 };
 
 struct GSOutput
@@ -30,44 +35,54 @@ struct GSOutput
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD2;
-	float4 normal : NORMAL;
+	float3 normal : NORMAL;
 };
 
+StructuredBuffer<Particle> buffIn : register(t0);
+uint index : SV_PrimitiveID;
+
 [maxvertexcount(4)]
-void main(point GSVertex _input[1], inout TriangleStream < GSOutput > output)
+void main(point GSin _input[1], inout TriangleStream < GSOutput > output)
 {
 	GSOutput verts[4];
 
-	GSVertex temp = _input[0];
+	//read in pos and norm info from srv
+	float4 tempPos = buffIn[index].pos;
+	float3 tempNorm = buffIn[index].norm;
 
-	temp.pos = mul(temp.pos, world);
-	
+	//convert pos and norm data into world space
+	tempPos = mul(tempPos, world);
+	tempNorm = mul(tempNorm, world);
+	//convert them into view space
+	tempPos = mul(tempPos, view);
+	tempNorm = mul(tempNorm, view);
 
-	//positions
-	verts[0].pos = _input[0].pos;
+	//build quad around view space position
+	verts[0].pos = tempPos;
 
-	verts[1].pos = _input[0].pos;
-	verts[1].pos.z = _input[0].pos.z - 0.5f;
+	verts[1].pos = tempPos;
+	verts[1].pos.y = tempPos.y - 0.1f;
 
-	verts[2].pos = _input[0].pos;
-	verts[2].pos.x = _input[0].pos.x - 0.5f;
+	verts[2].pos = tempPos;
+	verts[2].pos.x = tempPos.x - 0.1f;
 
-	verts[3].pos = _input[0].pos;
-	verts[3].pos.x = _input[0].pos.x - 0.5f;
-	verts[3].pos.z = _input[0].pos.z - 0.5f;
+	verts[3].pos = tempPos;
+	verts[3].pos.x = tempPos.x - 0.1f;
+	verts[3].pos.y = tempPos.y - 0.1f;
 
+	for (uint i = 0; i < 4; ++i)
+	{
+		//convert view space positions into projection space
+		verts[i].pos = mul(verts[i].pos, projection);
+		//assign normals to each vert
+		verts[i].normal = tempNorm;
+	}
+		
 	//UVs
 	verts[0].uv = float2(1, 0);
 	verts[1].uv = float2(0, 0);
 	verts[2].uv = float2(1, 1);
 	verts[3].uv = float2(0, 1);
-
-	
-
-
-
-	for (uint i = 0; i < 4; ++i)
-		verts[i].pos = mul(verts[i].pos, projection);
 
 	output.Append(verts[0]);
 	output.Append(verts[1]);

@@ -335,7 +335,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			uavDesc.Buffer.NumElements = MIST_NUMS;
 			hr = myDevice->CreateUnorderedAccessView(structBuffer, &uavDesc, &mistUAV);
 
-
 			//MATRICES******************************************************************************
 			// Initialize the world matrix
 			worldM = XMMatrixIdentity();
