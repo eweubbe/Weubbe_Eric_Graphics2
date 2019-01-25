@@ -1177,6 +1177,7 @@ void LetsDrawSomeStuff::Render()
 			UINT offsets[] = {0}; //where to start from in array
 
 			ID3D11ShaderResourceView* srvs[] = { skyView };
+			ID3D11UnorderedAccessView* uavs[] = { mistUAV };
 
 
 			//draw skybox
@@ -1307,28 +1308,58 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pSReflect, 0, 0);
 			myContext->DrawIndexed(indNums[4], 0, 0);
 
-			//draw mist
-			worldM = XMMatrixIdentity();
-			/*worldCpy = worldM;
-			worldM = worldCpy;*/
-			conBuff.world = XMMatrixTranspose(worldM);
-			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
-			tempVB[0] = vBuffer[5];
-			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
-			myContext->IASetIndexBuffer(iBuffer[5], DXGI_FORMAT_R32_UINT, 0);
-			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-			//vertex shader
-			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->VSSetShader(GeoVshader, 0, 0);
-			//geo shader
-			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->GSSetSamplers(0, 1, &SamplerLinear);
-			myContext->GSSetShader(GShader1, 0, 0);
-			//pixel shader
-			myContext->PSSetSamplers(0, 1, &SamplerLinear);
-			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->PSSetShader(pSGeo, 0, 0);
-			myContext->Draw(vertNums[5], 0);
+			////draw grey quads w geo shader
+			//worldM = XMMatrixIdentity();
+			///*worldCpy = worldM;
+			//worldM = worldCpy;*/
+			//conBuff.world = XMMatrixTranspose(worldM);
+			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			//tempVB[0] = vBuffer[5];
+			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			//myContext->IASetIndexBuffer(iBuffer[5], DXGI_FORMAT_R32_UINT, 0);
+			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+			////vertex shader
+			//myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->VSSetShader(GeoVshader, 0, 0);
+			////geo shader
+			//myContext->GSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->GSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->GSSetShader(GShader1, 0, 0);
+			////pixel shader
+			//myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->PSSetShader(pSGeo, 0, 0);
+			//myContext->Draw(vertNums[5], 0);
+
+			//draw mist particle system
+			//worldM = XMMatrixIdentity();
+			//conBuff.world = XMMatrixTranspose(worldM);
+			//myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			//tempVB[0] = nullptr;
+			//myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			//myContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+			//myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+			////vs
+			//myContext->VSSetShader(VSpart, 0, 0);
+			////cs
+			//myContext->CSSetConstantBuffers(0, 1, &cBuffer);
+			//srvs[0] = { mistSRV };
+			//myContext->CSSetShaderResources(0, 1, srvs);
+			//uavs[0] = { mistUAV };
+			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0);
+			//myContext->CSSetShader(CSpart, 0, 0);
+			//myContext->Dispatch(1, 1, 1);
+			////gs
+			//myContext->GSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->GSSetShaderResources(0, 1, srvs);
+			//myContext->GSSetSamplers(0, 1, &SamplerLinear);
+			//myContext->GSSetShader(GSpart, 0, 0);
+			////ps
+			//myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			//myContext->PSSetShader(PSpart, 0, 0);
+			////draw
+			//myContext->Draw(MIST_NUMS, 0);
+
 
 			//clear geo shader
 			ID3D11GeometryShader* off = nullptr;
