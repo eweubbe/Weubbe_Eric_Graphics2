@@ -47,7 +47,7 @@ using namespace SYSTEM;
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
-#define MIST_NUMS 500
+#define MIST_NUMS 10000
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -703,7 +703,7 @@ void LetsDrawSomeStuff::Mist2()
 {
 	for (int i = 0; i < MIST_NUMS; ++i)
 	{
-		mist[i].pos = XMFLOAT4(rand() % 30, rand() % 3 + 1.5f, rand() % 30, 1);
+		mist[i].pos = XMFLOAT4((float)rand()/(float)RAND_MAX * 30.0f, (float)rand() / (float)RAND_MAX * 1.5f + 1.5f, (float)rand() / (float)RAND_MAX * 30.0f, 1);
 		if ((int)mist[i].pos.x % 2 == 0)
 			mist[i].pos.x = -mist[i].pos.x;
 		if ((int)mist[i].pos.z % 2 == 0)
@@ -1344,11 +1344,11 @@ void LetsDrawSomeStuff::Render()
 			//vs
 			myContext->VSSetShader(VSpart, 0, 0);
 			//cs
-			//myContext->CSSetConstantBuffers(0, 1, &cBuffer);
-			//myContext->CSSetShaderResources(0, 1, srvs);
-			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0);
-			//myContext->CSSetShader(CSpart, 0, 0);
-			//myContext->Dispatch(1, 1, 1);
+			myContext->CSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->CSSetShaderResources(0, 1, srvs);
+			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0); //this line fucks the buffer
+			myContext->CSSetShader(CSpart, 0, 0);
+			myContext->Dispatch(1, 1, 1);
 			//gs
 			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->GSSetShaderResources(0, 1, srvs);

@@ -57,14 +57,14 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 	verts[0].pos = tempPos;
 
 	verts[1].pos = tempPos;
-	verts[1].pos.y = tempPos.y - 0.5f;
+	verts[1].pos.y = tempPos.y - 0.1f;
 
 	verts[2].pos = tempPos;
-	verts[2].pos.x = tempPos.x - 0.5f;
+	verts[2].pos.x = tempPos.x - 0.1f;
 
 	verts[3].pos = tempPos;
-	verts[3].pos.x = tempPos.x - 0.5f;
-	verts[3].pos.y = tempPos.y - 0.5f;
+	verts[3].pos.x = tempPos.x - 0.1f;
+	verts[3].pos.y = tempPos.y - 0.1f;
 
 	////convert them into view space
 	//tempPos = mul(tempPos, view);
