@@ -169,6 +169,8 @@ class LetsDrawSomeStuff
 	XTime timer;
 	float deltaT;
 	float rotationDegree;
+	UINT frameCount = 0;
+	bool switchDir = false;
 	//point light varis
 	XMFLOAT4 pointPos;
 	float pointLightInc;
@@ -1088,12 +1090,38 @@ void LetsDrawSomeStuff::Render()
 			deltaT -= deltaT;
 
 			//update point light pos
-			pointPos.z -= pointLightInc;
+		/*	pointPos.z -= pointLightInc;
 			if ((pointPos.z >= 6.0f) | (pointPos.z <= -6.0f))
-				pointLightInc = -pointLightInc;
+				pointLightInc = -pointLightInc;*/
 
 			//update fairy (point light pos)
-
+			if (!switchDir)
+			{
+				for (int i = 0; i < NUM_FAIRY; ++i)
+				{
+					if(i % 2 == 0)
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(sinf((float)timer.Delta() * 25.0f), (float)rand() / (float)RAND_MAX * 0.05f, (float)rand() / (float)RAND_MAX * 0.05f), fairPos[i]);
+					else
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-sinf((float)timer.Delta() * 25.0f), -(float)rand() / (float)RAND_MAX * 0.05f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+				}
+				++frameCount;
+				if (frameCount >= 240)
+					switchDir = !switchDir;
+			}
+			else if (switchDir)
+			{
+				for (int i = 0; i < NUM_FAIRY; ++i)
+				{
+					if (i % 2 == 0)
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-sinf((float)timer.Delta() * 25.0f), -(float)rand() / (float)RAND_MAX *  0.05f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+					else
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(sinf((float)timer.Delta() * 25.0f), (float)rand() / (float)RAND_MAX *  0.05f, (float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+				}
+				--frameCount;
+				if (frameCount <= 0)
+					switchDir = !switchDir;
+			}
+			
 
 			//update direct light direction
 			//direcDirec.x -= direcInc;

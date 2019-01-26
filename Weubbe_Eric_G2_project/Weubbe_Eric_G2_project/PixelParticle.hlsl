@@ -19,19 +19,32 @@ cbuffer ConstantBuffer : register(b0)
 	float deltaT;
 }
 
-float4 main(float4 inPos : SV_POSITION) : SV_TARGET
+struct PSInput
 {
-	float4 color = (0.5f, 0.5f, 0.5f, 0.5f);
-	////apply directional light (light[0])
-	//color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
-	////apply ambient light
-	//color = lerp(float4(0, 0, 0, 1), color, color + 0.9f);
+	float4 pos : SV_POSITION;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD2;
+	float3 normal : NORMAL;
+	float4 worldPos : TEXCOORD3;
+};
 
-	////apply point light (light[1])
-	//float4 pointDir = normalize(lightDir[1] - _input.worldPos);
-	//float lightRatio = saturate(dot(pointDir, _input.normal));
-	//float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
-	//color += lightCol[1] * lightRatio * atten;
+float4 main(PSInput _input) : SV_TARGET
+{
+	float4 color = (0.0f, 0.0f, 0.0f, 0.0f);
+	//apply directional light (light[0])
+	color += saturate(dot(lightDir[0], _input.normal) * lightCol[0]);
+	//apply ambient light
+	color = lerp(float4(0, 0, 0, 1), color, color + 0.9f);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		float4 pointDir = normalize(fairyPos[i] - _input.worldPos);
+		float lightRatio = saturate(dot(pointDir, _input.normal));
+		float atten = 1.0f - saturate((length(fairyPos[i] - _input.worldPos)) / pointRad);
+		color += lightCol[1] * lightRatio * atten;
+	}
+
+	color *= float4(0.5f, 0.5f, 0.5f, 0.5f);
 
 	return color;
 }

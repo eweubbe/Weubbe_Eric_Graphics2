@@ -38,6 +38,7 @@ struct GSOutput
 	float4 color : COLOR;
 	float2 uv : TEXCOORD2;
 	float3 normal : NORMAL;
+	float4 worldPos : TEXCOORD3;
 };
 
 StructuredBuffer<Particle> buffIn : register(t0);
@@ -53,6 +54,8 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 
 	//convert pos and norm data into world space
 	tempPos = mul(tempPos, world);
+	for (int i = 0; i < 4; ++i)
+		verts[i].worldPos = tempPos;
 	tempNorm = mul(tempNorm, world);
 
 	//convert them into view space
