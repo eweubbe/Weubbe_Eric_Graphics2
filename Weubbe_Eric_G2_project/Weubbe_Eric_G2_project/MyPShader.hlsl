@@ -71,5 +71,11 @@ float4 main(PSVertex _input) : SV_TARGET
 		 discard;
 	 }
 	
+	 float dist = abs(distance(_input.worldPos, float4(0, 0, 0, 1)));
+	 //if ( dist >= 20)
+	 {
+		 color = lerp(float4(0.0118f, 0.0196f, 0.0392f, 1), color, (1 - dist/30.0f));
+	 }
+
 	 return color;
 }

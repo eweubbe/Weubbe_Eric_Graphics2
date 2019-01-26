@@ -48,6 +48,7 @@ float4 main(PSVertex _input) : SV_TARGET
 	float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
 	color += lightCol[1] * lightRatio * atten;*/
 
+	//apply point lights
 	for (int i = 0; i < 8; ++i)
 	{
 		float4 pointDir = normalize(fairyPos[i] - _input.worldPos);
@@ -73,13 +74,21 @@ float4 main(PSVertex _input) : SV_TARGET
 	intensity = max(pow(saturate(dot(_input.normal, normalize(halfVec))), PowInt.x), 0);
 	color += lightCol[0] * intensity * PowInt.y;*/
 
-	//apply specular
 	float3 viewDir = normalize((float3)camPos - (float3)_input.worldPos);
-	float3 lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
-	float3 reflection = reflect(lightDirection, (float3)_input.normal);
-	float fSpec = saturate(dot(reflection, viewDir));
-	fSpec = pow(fSpec, PowInt.x);
-	color += lightCol[2] * fSpec * PowInt.y;
+	float3 lightDirection;
+	float3 reflection;
+	float fSpec;
+	//apply specular
+	if (abs(distance(_input.worldPos, lightDir[2])) <= 15)
+	{
+		
+		lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
+		reflection = reflect(lightDirection, (float3)_input.normal);
+		fSpec = saturate(dot(reflection, viewDir));
+		fSpec = pow(fSpec, PowInt.x);
+		color += lightCol[2] * fSpec * PowInt.y;
+	}
+	
 
 	lightDirection = (float3)-lightDir[0];
 	reflection = reflect(lightDirection, (float3)_input.normal);
@@ -89,11 +98,14 @@ float4 main(PSVertex _input) : SV_TARGET
 
 	for (int j = 0; j < 8; ++j)
 	{
-		lightDirection = normalize((float3)_input.worldPos - (float3)fairyPos[j]);
-		reflection = reflect(lightDirection, (float3)_input.normal);
-		fSpec = saturate(dot(reflection, viewDir));
-		fSpec = pow(fSpec, PowInt.x * 100);
-		color += lightCol[1] * fSpec * PowInt.y *0.5f;
+		if (abs(distance(_input.worldPos, fairyPos[j])) <= 15)
+		{
+			lightDirection = normalize((float3)_input.worldPos - (float3)fairyPos[j]);
+			reflection = reflect(lightDirection, (float3)_input.normal);
+			fSpec = saturate(dot(reflection, viewDir));
+			fSpec = pow(fSpec, PowInt.x * 100);
+			color += lightCol[1] * fSpec * PowInt.y *0.5f;
+		}
 	}
 
 	//texture object
