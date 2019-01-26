@@ -67,6 +67,7 @@ class LetsDrawSomeStuff
 	ID3D11Buffer* iBuffer[NUM_OBJECTS];
 	ID3D11Buffer* cBuffer = nullptr;
 	ID3D11Buffer* structBuffer = nullptr;
+	ID3D11BlendState* blendState = nullptr;
 	//descirbes what a vertex looks like to directx
 	ID3D11InputLayout* vLayout = nullptr;
 	//viewport
@@ -275,6 +276,18 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			sampDesc.MinLOD = 0;
 			sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 			hr = myDevice->CreateSamplerState(&sampDesc, &SamplerLinear);
+
+			D3D11_BLEND_DESC blendDesc;
+			ZeroMemory(&blendDesc, sizeof(blendDesc));
+			blendDesc.RenderTarget->BlendEnable = true;
+			blendDesc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
+			blendDesc.RenderTarget->DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+			blendDesc.RenderTarget->BlendOp = D3D11_BLEND_OP_ADD;
+			blendDesc.RenderTarget->SrcBlendAlpha = D3D11_BLEND_ONE;
+			blendDesc.RenderTarget->DestBlendAlpha = D3D11_BLEND_ZERO;
+			blendDesc.RenderTarget->BlendOpAlpha = D3D11_BLEND_OP_ADD;
+			blendDesc.RenderTarget->RenderTargetWriteMask = 0x0f;
+			hr = myDevice->CreateBlendState(&blendDesc, &blendState);
 			
 			//BUFFERS********************************************************************************
 			D3D11_BUFFER_DESC bDesc;
@@ -943,6 +956,7 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	for (int i = 0; i < NUM_OBJECTS; ++i)
 		iBuffer[i]->Release();
 	if(cBuffer) cBuffer->Release();
+	if (blendState) blendState->Release();
 	if(structBuffer) structBuffer->Release();
 	if(vLayout) vLayout->Release();
 	if(vShader) vShader->Release();
@@ -1358,8 +1372,12 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(PSpart, 0, 0);
 			//draw
+			myContext->OMSetBlendState(blendState, NULL, 0xffffffff);
 			myContext->Draw(MIST_NUMS, 0);
 
+
+			//reset blend state
+			myContext->OMSetBlendState(nullptr, NULL, 0xffffffff);
 
 			//clear geo shader
 			ID3D11GeometryShader* off = nullptr;
