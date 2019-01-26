@@ -25,6 +25,8 @@ cbuffer ConstantBuffer : register(b0)
 	float4 camPos;
 	float2 pad3;
 	float2 PowInt;
+	float4 fairyPos[8];
+	float deltaT;
 }
 
 float4 main(PSVertex _input) : SV_TARGET

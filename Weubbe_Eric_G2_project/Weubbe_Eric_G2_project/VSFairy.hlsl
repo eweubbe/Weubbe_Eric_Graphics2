@@ -41,7 +41,7 @@ PSVertex main(InputVertex _input, uint instanceID : SV_InstanceID)
 {
 	PSVertex output = (PSVertex)0;
 	//position
-	output.pos = mul(TreeInstPositions[instanceID],_input.pos);
+	output.pos = mul(TreeInstPositions[instanceID], _input.pos);
 	output.worldPos = output.pos;
 	output.pos = mul(output.pos, view);
 	output.pos = mul(output.pos, projection);

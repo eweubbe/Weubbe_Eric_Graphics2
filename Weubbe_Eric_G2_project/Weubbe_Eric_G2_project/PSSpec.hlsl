@@ -25,6 +25,8 @@ cbuffer ConstantBuffer : register(b0)
 	float4 camPos;
 	float2 pad3;
 	float2 PowInt;
+	float4 fairyPos[8];
+	float deltaT;
 }
 
 texture2D tree : register(t0);
@@ -41,16 +43,24 @@ float4 main(PSVertex _input) : SV_TARGET
 	color = lerp(float4(0, 0, 0, 1), color, color + 0.9f);
 
 	//apply point light (light[1])
-	float4 pointDir = normalize(lightDir[1] - _input.worldPos);
+	/*float4 pointDir = normalize(lightDir[1] - _input.worldPos);
 	float lightRatio = saturate(dot(pointDir, _input.normal));
 	float atten = 1.0f - saturate((length(lightDir[1] - _input.worldPos)) / pointRad);
-	color += lightCol[1] * lightRatio * atten;
+	color += lightCol[1] * lightRatio * atten;*/
+
+	for (int i = 0; i < 8; ++i)
+	{
+		float4 pointDir = normalize(fairyPos[i] - _input.worldPos);
+		float lightRatio = saturate(dot(pointDir, _input.normal));
+		float atten = 1.0f - saturate((length(fairyPos[i] - _input.worldPos)) / pointRad);
+		color += lightCol[1] * lightRatio * atten;
+	}
 
 	//apply spot light (light[2])
 	float3 spotDir = normalize(lightDir[2] - _input.worldPos);
 	float surfaceRatio = saturate(dot(-spotDir, coneDir));
-	atten = 1.0f - saturate((coneRatio - surfaceRatio) / (coneRatio - 0.8f));
-	lightRatio = saturate(dot(spotDir, _input.normal));
+	float atten = 1.0f - saturate((coneRatio - surfaceRatio) / (coneRatio - 0.8f));
+	float lightRatio = saturate(dot(spotDir, _input.normal));
 	color += lightRatio * lightCol[2] * atten;
 
 	//apply specular
@@ -76,6 +86,15 @@ float4 main(PSVertex _input) : SV_TARGET
 	fSpec = saturate(dot(reflection, viewDir));
 	fSpec = pow(fSpec, PowInt.x);
 	color += lightCol[0] * fSpec * PowInt.y;
+
+	for (int j = 0; j < 8; ++j)
+	{
+		lightDirection = normalize((float3)_input.worldPos - (float3)fairyPos[j]);
+		reflection = reflect(lightDirection, (float3)_input.normal);
+		fSpec = saturate(dot(reflection, viewDir));
+		fSpec = pow(fSpec, PowInt.x * 100);
+		color += lightCol[1] * fSpec * PowInt.y *0.5f;
+	}
 
 	//texture object
 	color *= tree.Sample(treeFilter, _input.uv);

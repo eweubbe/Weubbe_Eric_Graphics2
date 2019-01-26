@@ -47,6 +47,7 @@ using namespace SYSTEM;
 #define NUM_OBJECTS 6
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
+#define NUM_FAIRY 8
 #define MIST_NUMS 20000
 
 // Simple Container class to make life easier/cleaner
@@ -152,6 +153,8 @@ class LetsDrawSomeStuff
 		XMFLOAT4 camPos;
 		XMFLOAT2 pad3;
 		XMFLOAT2 PowInt;
+		XMFLOAT4 fairyPos[NUM_FAIRY];
+		float time;
 	};
 
 	Vertex* objs[NUM_OBJECTS];
@@ -174,6 +177,8 @@ class LetsDrawSomeStuff
 	float direcInc;
 	//tree position matrices
 	XMMATRIX treePos[TREE_INSTANCES];
+	//fairy pos matrices(point lights)
+	XMMATRIX fairPos[NUM_FAIRY];
 
 	//cursor detection
 	POINT startingCursorPos;
@@ -420,6 +425,16 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			treePos[13] = XMMatrixMultiply(XMMatrixTranslation(-15.0f, 0.0f, -14.0f), XMMatrixIdentity());
 			treePos[14] = XMMatrixMultiply(XMMatrixTranslation(21.0f, 0.0f, 24.0f), XMMatrixIdentity());
 			treePos[15] = XMMatrixMultiply(XMMatrixTranslation(-17.0f, 0.0f, 20.0f), XMMatrixIdentity());
+
+			//set fairy(point light) positions
+			for (int i = 0; i < NUM_FAIRY; ++i)
+			{
+				fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 20.0f, (float)rand() / (float)RAND_MAX * 5.0f, (float)rand() / (float)RAND_MAX * 20.0f), XMMatrixIdentity());
+				if ((int)fairPos[i].r[3].m128_f32[0] % 2 == 0)
+					fairPos[i].r[3].m128_f32[0] = -fairPos[i].r[3].m128_f32[0];
+				if ((int)fairPos[i].r[3].m128_f32[2] % 2 == 0)
+					fairPos[i].r[3].m128_f32[2] = -fairPos[i].r[3].m128_f32[2];
+			}
 
 			//set initial cursor position
 			GetCursorPos(&startingCursorPos);
@@ -1077,6 +1092,9 @@ void LetsDrawSomeStuff::Render()
 			if ((pointPos.z >= 6.0f) | (pointPos.z <= -6.0f))
 				pointLightInc = -pointLightInc;
 
+			//update fairy (point light pos)
+
+
 			//update direct light direction
 			//direcDirec.x -= direcInc;
 			if ((direcDirec.x <= -0.9f) | (direcDirec.x >= 0.9f))
@@ -1168,10 +1186,15 @@ void LetsDrawSomeStuff::Render()
 				conBuff.LightColor[i] = LightingColors[i];
 				conBuff.LightDir[i] = LightingDirs[i];
 			}
+			for (int i = 0; i < NUM_FAIRY; ++i)
+			{
+				conBuff.fairyPos[i] = XMFLOAT4(fairPos[i].r[3].m128_f32[0], fairPos[i].r[3].m128_f32[1], fairPos[i].r[3].m128_f32[2], 1.0f);
+			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
 			conBuff.coneRatio = 0.9f;
 			conBuff.coneDir = XMFLOAT4(-0.3, -1.0f, 0.5f, 1.0f);
+			conBuff.time = deltaT;
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
@@ -1409,6 +1432,9 @@ void LetsDrawSomeStuff::Render()
 			//	myContext->PSSetShader(pSolid, 0, 0);
 			//	myContext->DrawIndexed(indNums[1], 0, 0);
 			//}
+
+			//draw fairy objects
+
 			
 
 			/////////////////////////////////////////////////////////////////////////////
