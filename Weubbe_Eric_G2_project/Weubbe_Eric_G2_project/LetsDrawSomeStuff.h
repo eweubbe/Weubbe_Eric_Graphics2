@@ -48,7 +48,7 @@ using namespace SYSTEM;
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
 #define NUM_FAIRY 8
-#define MIST_NUMS 20000
+#define MIST_NUMS 40000
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -733,7 +733,7 @@ void LetsDrawSomeStuff::Mist2()
 {
 	for (int i = 0; i < MIST_NUMS; ++i)
 	{
-		mist[i].pos = XMFLOAT4((float)rand()/(float)RAND_MAX * 30.0f, (float)rand() / (float)RAND_MAX * 1.05f + 1.5f, (float)rand() / (float)RAND_MAX * 30.0f, 1);
+		mist[i].pos = XMFLOAT4((float)rand()/(float)RAND_MAX * 35, (float)rand() / (float)RAND_MAX * 1.05f + 1.5f, (float)rand() / (float)RAND_MAX * 35, 1);
 		if ((int)mist[i].pos.x % 2 == 0)
 			mist[i].pos.x = -mist[i].pos.x;
 		if ((int)mist[i].pos.z % 2 == 0)
