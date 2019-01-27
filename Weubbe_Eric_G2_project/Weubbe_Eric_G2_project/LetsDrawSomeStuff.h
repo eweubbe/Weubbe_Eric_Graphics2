@@ -48,7 +48,7 @@ using namespace SYSTEM;
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
 #define NUM_FAIRY 8
-#define MIST_NUMS 40000
+#define MIST_NUMS 1000000
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -1194,14 +1194,14 @@ void LetsDrawSomeStuff::Render()
 			XMFLOAT4 LightingColors[NUM_LIGHTS] =
 			{
 				/*direction*/ XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
-				/*point*/     XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f),
-				/*spot*/      XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
+				/*point*/     XMFLOAT4(1.0f, 1.0f, 0.2f, 1.0f),
+				/*spot*/      XMFLOAT4(1.0f, 0.0f, 2.0f, 1.0f),
 			};
 			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
 			{
 				/*direction*/ direcDirec,
 				/*point*/     pointPos,
-				/*spot*/	  XMFLOAT4(5.0f, 5.0f, -10.0f, 1.0f)
+				/*spot*/	  XMFLOAT4(2.0f, 2.0f, 5.0f, 1.0f)
 			};	
 
 			//update constant buffer
@@ -1220,8 +1220,8 @@ void LetsDrawSomeStuff::Render()
 			}
 			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
 			conBuff.pointRad = 5.0f;
-			conBuff.coneRatio = 0.9f;
-			conBuff.coneDir = XMFLOAT4(-0.3, -1.0f, 0.5f, 1.0f);
+			conBuff.coneRatio = 0.99f;
+			conBuff.coneDir = XMFLOAT4(-0.5, -1.0f, 0.3f, 1.0f);
 			conBuff.time = deltaT;
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
@@ -1319,7 +1319,7 @@ void LetsDrawSomeStuff::Render()
 			//draw rock
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-1.5f, 0, -3), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, 0, 6), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			conBuff.PowInt = XMFLOAT2(6.0f, 2.0f);
@@ -1346,13 +1346,13 @@ void LetsDrawSomeStuff::Render()
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSpec, 0, 0);
-			myContext->DrawIndexed(indNums[3], 0, 0);
+			//myContext->DrawIndexed(indNums[3], 0, 0);
 
 			////draw sword
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(3.15), worldCpy);
-			worldCpy = XMMatrixMultiply(XMMatrixTranslation(1.5f, -2.5f, -3.1f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -2.5f, 5.9f), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
 			//worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -10.5f, 0.0f), worldCpy);
 			//worldCpy = XMMatrixMultiply(XMMatrixScaling(12.2f, 1.0f, 2.2f), worldCpy);
