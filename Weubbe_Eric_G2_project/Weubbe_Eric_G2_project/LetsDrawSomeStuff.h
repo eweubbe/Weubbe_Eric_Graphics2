@@ -1100,9 +1100,9 @@ void LetsDrawSomeStuff::Render()
 				for (int i = 0; i < NUM_FAIRY; ++i)
 				{
 					if(i % 2 == 0)
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(sinf((float)timer.Delta() * 25.0f), (float)rand() / (float)RAND_MAX * 0.05f, (float)rand() / (float)RAND_MAX * 0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX * 0.02f, (float)rand() / (float)RAND_MAX * 0.05f), fairPos[i]);
 					else
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-sinf((float)timer.Delta() * 25.0f), -(float)rand() / (float)RAND_MAX * 0.05f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX * 0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
 				}
 				++frameCount;
 				if (frameCount >= 240)
@@ -1113,9 +1113,9 @@ void LetsDrawSomeStuff::Render()
 				for (int i = 0; i < NUM_FAIRY; ++i)
 				{
 					if (i % 2 == 0)
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-sinf((float)timer.Delta() * 25.0f), -(float)rand() / (float)RAND_MAX *  0.05f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX *  0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
 					else
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(sinf((float)timer.Delta() * 25.0f), (float)rand() / (float)RAND_MAX *  0.05f, (float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX *  0.02f, (float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
 				}
 				--frameCount;
 				if (frameCount <= 0)
