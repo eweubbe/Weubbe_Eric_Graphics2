@@ -44,11 +44,11 @@ using namespace SYSTEM;
 //Defines
 #define RAND_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1.0f);
 #define EPSILON 0.00001f
-#define NUM_OBJECTS 6
+#define NUM_OBJECTS 7
 #define NUM_LIGHTS 3
 #define TREE_INSTANCES 16
 #define NUM_FAIRY 8
-#define MIST_NUMS 1000000
+#define MIST_NUMS 10000
 
 // Simple Container class to make life easier/cleaner
 class LetsDrawSomeStuff
@@ -113,6 +113,9 @@ class LetsDrawSomeStuff
 	ID3D11ShaderResourceView* mistSRV = nullptr;
 	ID3D11UnorderedAccessView* mistUAV = nullptr;
 	ID3D11Resource* mistRes = structBuffer;
+	//RTT plane
+	ID3D11Texture2D* planeRTT = nullptr;
+	ID3D11ShaderResourceView* planeSRV = nullptr;
 
 	//matrices
 	XMMATRIX worldM;
@@ -258,7 +261,8 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			LoadOBJVerts("rock.txt", 3);
 			LoadOBJVerts("sword1.txt", 4);
 			Mist(5);
-			Mist2();
+			Mist2(); //does not use vertex or index buffer
+			Plane(6);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -284,6 +288,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 			hr = myDevice->CreateSamplerState(&sampDesc, &SamplerLinear);
 
+			//transparency blend description
 			D3D11_BLEND_DESC blendDesc;
 			ZeroMemory(&blendDesc, sizeof(blendDesc));
 			blendDesc.RenderTarget->BlendEnable = true;
@@ -334,6 +339,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			bDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
 			bDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 			bDesc.StructureByteStride = sizeof(Particle);
+			bDesc.Usage = D3D11_USAGE_DEFAULT;
 			bDesc.ByteWidth = sizeof(Particle) * MIST_NUMS;
 			subData.pSysMem = mist;
 			hr = myDevice->CreateBuffer(&bDesc, &subData, &structBuffer);
@@ -1021,47 +1027,15 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event, GW::SYSTEM::GWindow* _window)
 {
 	//get new client width and height
-	UINT width;
-	UINT height;
-	_window->GetClientWidth(width);
-	_window->GetHeight(height);
+	UINT vpWidth;
+	UINT vpHeight;
+	_window->GetClientWidth(vpWidth);
+	_window->GetClientHeight(vpHeight);
 
-	if (_event == GW::SYSTEM::GWindowInputEvents::RESIZE)
-	{	
-		// Grab handles to all DX11 base interfaces
-		//myDevice->Release();
-		mySwapChain->Release();
-		//mySurface->GetDevice((void**)&myDevice);
-		mySurface->GetSwapchain((void**)&mySwapChain);
+	myPort.Width = (float)vpWidth;
+	myPort.Height = (float)vpHeight;
 
-		////REMAKE BUFFERS
-		//D3D11_BUFFER_DESC bDesc;
-		//D3D11_SUBRESOURCE_DATA subData;
-		//ZeroMemory(&bDesc, sizeof(bDesc));
-		//ZeroMemory(&subData, sizeof(subData));
-		////VERTEX BUFFER
-		//	//set up buffer description
-		//bDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		//bDesc.CPUAccessFlags = 0;
-		//bDesc.MiscFlags = 0;
-		//bDesc.StructureByteStride = 0;
-		//bDesc.Usage = D3D11_USAGE_DEFAULT; //would change if constantly rewriting a constant buffer
-		//for (int i = 0; i < NUM_OBJECTS; ++i)
-		//{
-		//	bDesc.ByteWidth = sizeof(Vertex) * vertNums[i];
-		//	subData.pSysMem = objs[i];
-		//	hr = myDevice->CreateBuffer(&bDesc, &subData, &vBuffer[i]);
-		//}
-
-		////INDEX BUFFER
-		//bDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		//for (int i = 0; i < NUM_OBJECTS; ++i)
-		//{
-		//	bDesc.ByteWidth = sizeof(UINT) * indNums[i];
-		//	subData.pSysMem = indices[i];
-		//	hr = myDevice->CreateBuffer(&bDesc, &subData, &iBuffer[i]);
-		//}
-	}
+	projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
 }
 
 // Draw
@@ -1069,6 +1043,8 @@ void LetsDrawSomeStuff::Render()
 {
 	if (mySurface) // valid?
 	{
+		
+
 		timer.Signal();
 		deltaT += (float)timer.Delta();
 
@@ -1095,14 +1071,16 @@ void LetsDrawSomeStuff::Render()
 				pointLightInc = -pointLightInc;*/
 
 			//update fairy (point light pos)
+			XMMATRIX tempFair[NUM_FAIRY];
 			if (!switchDir)
 			{
 				for (int i = 0; i < NUM_FAIRY; ++i)
 				{
+					tempFair[i] = fairPos[i];
 					if(i % 2 == 0)
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX * 0.02f, (float)rand() / (float)RAND_MAX * 0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX * 0.02f, (float)rand() / (float)RAND_MAX * 0.05f), tempFair[i]);
 					else
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX * 0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX * 0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), tempFair[i]);
 				}
 				++frameCount;
 				if (frameCount >= 240)
@@ -1112,10 +1090,11 @@ void LetsDrawSomeStuff::Render()
 			{
 				for (int i = 0; i < NUM_FAIRY; ++i)
 				{
+					tempFair[i] = fairPos[i];
 					if (i % 2 == 0)
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX *  0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation(-(float)rand() / (float)RAND_MAX * 0.25f, -(float)rand() / (float)RAND_MAX *  0.02f, -(float)rand() / (float)RAND_MAX *  0.05f), tempFair[i]);
 					else
-						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX *  0.02f, (float)rand() / (float)RAND_MAX *  0.05f), fairPos[i]);
+						fairPos[i] = XMMatrixMultiply(XMMatrixTranslation((float)rand() / (float)RAND_MAX * 0.25f, (float)rand() / (float)RAND_MAX *  0.02f, (float)rand() / (float)RAND_MAX *  0.05f), tempFair[i]);
 				}
 				--frameCount;
 				if (frameCount <= 0)
@@ -1173,6 +1152,7 @@ void LetsDrawSomeStuff::Render()
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 
 		// this could be changed during resolution edits, get it every frame
+
 		ID3D11RenderTargetView *myRenderTargetView = nullptr;
 		ID3D11DepthStencilView *myDepthStencilView = nullptr;
 		if (G_SUCCESS(mySurface->GetRenderTarget((void**)&myRenderTargetView)))
@@ -1295,6 +1275,8 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexedInstanced(indNums[0], TREE_INSTANCES, 0, 0, 0);
+			//draw RTT tree to back buffer
+
 
 
 			//draw plane
@@ -1396,6 +1378,7 @@ void LetsDrawSomeStuff::Render()
 			//myContext->PSSetShader(pSGeo, 0, 0);
 			//myContext->Draw(vertNums[5], 0);
 
+
 			//draw mist particle system
 			worldM = XMMatrixIdentity();
 			conBuff.world = XMMatrixTranspose(worldM);
@@ -1412,6 +1395,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->CSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->CSSetShaderResources(0, 1, srvs);
 			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0); //this line fucks the buffer
+			myContext->CSGetUnorderedAccessViews(0, 1, uavs);
 			myContext->CSSetShader(CSpart, 0, 0);
 			myContext->Dispatch(1, 1, 1);
 			//gs

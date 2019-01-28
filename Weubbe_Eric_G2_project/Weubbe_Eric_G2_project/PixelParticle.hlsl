@@ -44,7 +44,7 @@ float4 main(PSInput _input) : SV_TARGET
 		color += lightCol[1] * lightRatio * atten;
 	}
 
-	color *= float4(0.7f, 0.7f, 0.7f, 0.5f);
+	color *= float4(0.9f, 0.9f, 0.9f, 0.7f);
 
 	return color;
 }
