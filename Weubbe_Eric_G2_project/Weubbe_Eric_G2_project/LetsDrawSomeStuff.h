@@ -122,6 +122,7 @@ class LetsDrawSomeStuff
 	ID3D11Texture2D* rttDepthTex = nullptr;
 	//dsv for depthstencil
 	ID3D11DepthStencilView* RttDsv = nullptr;
+	D3D11_VIEWPORT rttVport;
 	
 
 	//matrices
@@ -296,6 +297,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			rttTexDesc.MipLevels = 1;
 			rttTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 			rttTexDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			rttTexDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 			rttTexDesc.Usage = D3D11_USAGE_DEFAULT;
 			rttTexDesc.SampleDesc.Count = 1;
 			rttTexDesc.SampleDesc.Quality = 0;
@@ -333,6 +335,14 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			rttDsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 			rttDsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			hr = myDevice->CreateDepthStencilView(rttDepthTex, &rttDsvDesc, &RttDsv);
+
+			rttVport.Width = 1024;
+			rttVport.Height = 1024;
+			rttVport.TopLeftX = 0;
+			rttVport.TopLeftY = 0;
+			rttVport.MinDepth = 0;
+			rttVport.MaxDepth = 1;
+
 			//END RTT
 
 			// Create the sample state
@@ -1233,8 +1243,89 @@ void LetsDrawSomeStuff::Render()
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
 		projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 
-		// this could be changed during resolution edits, get it every frame
+		//SET UP INITIAL CONSTANT BUFFER DATA and INDEX AND VERTEX DATA
+		ID3D11Buffer* tempVB[] = { vBuffer[0] }; // multiple buffers would be for splitting data up, i.e. separate buffers for pos and color
+		UINT strides[] = { sizeof(Vertex) }; //distance between 2 vertecies
+		UINT offsets[] = { 0 }; //where to start from in array
+		myContext->IASetInputLayout(vLayout);
 
+		ID3D11ShaderResourceView* srvs[] = { skyView };
+		ID3D11UnorderedAccessView* uavs[] = { mistUAV };
+
+		//set up lighting data
+		XMFLOAT4 LightingColors[NUM_LIGHTS] =
+		{
+			/*direction*/ XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
+			/*point*/     XMFLOAT4(1.0f, 1.0f, 0.2f, 1.0f),
+			/*spot*/      XMFLOAT4(1.0f, 0.0f, 2.0f, 1.0f),
+		};
+		XMFLOAT4 LightingDirs[NUM_LIGHTS] =
+		{
+			/*direction*/ direcDirec,
+			/*point*/     pointPos,
+			/*spot*/	  XMFLOAT4(2.0f, 2.0f, 5.0f, 1.0f)
+		};
+
+		//update constant buffer
+		ConstantBuffer conBuff;
+		conBuff.camPos = cameraPos;
+		conBuff.view = XMMatrixTranspose(viewM);
+		conBuff.projection = XMMatrixTranspose(projM);
+		for (int i = 0; i < NUM_LIGHTS; ++i)
+		{
+			conBuff.LightColor[i] = LightingColors[i];
+			conBuff.LightDir[i] = LightingDirs[i];
+		}
+		for (int i = 0; i < NUM_FAIRY; ++i)
+		{
+			conBuff.fairyPos[i] = XMFLOAT4(fairPos[i].r[3].m128_f32[0], fairPos[i].r[3].m128_f32[1], fairPos[i].r[3].m128_f32[2], 1.0f);
+		}
+		conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
+		conBuff.pointRad = 5.0f;
+		conBuff.coneRatio = 0.99f;
+		conBuff.coneDir = XMFLOAT4(-0.5, -1.0f, 0.3f, 1.0f);
+		conBuff.time = deltaT;
+
+		//SET RTT RTV && DSV
+		ID3D11RenderTargetView* rttRtvs[] = { rttRtv };
+		myContext->OMSetRenderTargets(1, rttRtvs, RttDsv);
+		const float green[] = { 0.0f,1,0.2f, 1.0f };
+		myContext->ClearRenderTargetView(rttRtv, green);
+		myContext->ClearDepthStencilView(RttDsv, D3D11_CLEAR_DEPTH, 1, 0);
+		myContext->RSSetViewports(1, &rttVport);
+		
+		//matrices for rtt
+		XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -10.0f, 0.0f);
+		XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX viewM2 = XMMatrixLookAtLH(Eye, At, Up);
+		XMMATRIX projM2 = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.1f, 100.0f);
+
+		//draw tree to rtt rtv
+		worldM = XMMatrixIdentity();
+		worldCpy = worldM;
+		worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -2.0f, 0.0f), worldCpy);
+		worldM = worldCpy;
+		conBuff.world = XMMatrixTranspose(worldM);
+		conBuff.view = XMMatrixTranspose(viewM2);
+		conBuff.projection = XMMatrixTranspose(projM2);
+		conBuff.PowInt = XMFLOAT2(2.0f, 0.5f);
+		myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+		tempVB[0] = vBuffer[0];
+		myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+		myContext->IASetIndexBuffer(iBuffer[0], DXGI_FORMAT_R32_UINT, 0);
+		myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //what do we want it to draw? line, triangle, etc.
+		myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+		myContext->VSSetShader(vShader, 0, 0);
+		srvs[0] = { treeView };
+		myContext->PSSetShaderResources(0, 1, srvs);
+		myContext->PSSetSamplers(0, 1, &SamplerLinear);
+		myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+		myContext->PSSetShader(pSpec, 0, 0);
+		myContext->DrawIndexed(indNums[0], 0, 0);
+		myContext->GenerateMips(rttSrv);
+
+		// this could be changed during resolution edits, get it every frame
 		ID3D11RenderTargetView *myRenderTargetView = nullptr;
 		ID3D11DepthStencilView *myDepthStencilView = nullptr;
 		if (G_SUCCESS(mySurface->GetRenderTarget((void**)&myRenderTargetView)))
@@ -1252,39 +1343,7 @@ void LetsDrawSomeStuff::Render()
 			const float sky[] = { 0.0f, 0.1f, 0.15f, 1 };
 			myContext->ClearRenderTargetView(myRenderTargetView, sky);
 
-			//set up lighting data
-			XMFLOAT4 LightingColors[NUM_LIGHTS] =
-			{
-				/*direction*/ XMFLOAT4(0.1f, 0.4f, 0.8f, 1.0f),
-				/*point*/     XMFLOAT4(1.0f, 1.0f, 0.2f, 1.0f),
-				/*spot*/      XMFLOAT4(1.0f, 0.0f, 2.0f, 1.0f),
-			};
-			XMFLOAT4 LightingDirs[NUM_LIGHTS] =
-			{
-				/*direction*/ direcDirec,
-				/*point*/     pointPos,
-				/*spot*/	  XMFLOAT4(2.0f, 2.0f, 5.0f, 1.0f)
-			};	
-
-			//update constant buffer
-			ConstantBuffer conBuff;
-			conBuff.camPos = cameraPos;
-			conBuff.view = XMMatrixTranspose(viewM);
-			conBuff.projection = XMMatrixTranspose(projM);
-			for (int i = 0; i < NUM_LIGHTS; ++i)
-			{
-				conBuff.LightColor[i] = LightingColors[i];
-				conBuff.LightDir[i] = LightingDirs[i];
-			}
-			for (int i = 0; i < NUM_FAIRY; ++i)
-			{
-				conBuff.fairyPos[i] = XMFLOAT4(fairPos[i].r[3].m128_f32[0], fairPos[i].r[3].m128_f32[1], fairPos[i].r[3].m128_f32[2], 1.0f);
-			}
-			conBuff.OutputColor = XMFLOAT4(0, 0, 0, 0);
-			conBuff.pointRad = 5.0f;
-			conBuff.coneRatio = 0.99f;
-			conBuff.coneDir = XMFLOAT4(-0.5, -1.0f, 0.3f, 1.0f);
-			conBuff.time = deltaT;
+			
 
 			// Set active target for drawing, all array based D3D11 functions should use a syntax similar to below
 			
@@ -1296,16 +1355,9 @@ void LetsDrawSomeStuff::Render()
 			// TODO: Set your shaders, Update & Set your constant buffers, Attatch your vertex & index buffers, Set your InputLayout & Topology & Draw!
 			//rasterizer
 			myContext->RSSetViewports(1, &myPort);
-
-			//input assembler general info
-			myContext->IASetInputLayout(vLayout);
-			ID3D11Buffer* tempVB[] = { vBuffer[0] }; // multiple buffers would be for splitting data up, i.e. separate buffers for pos and color
-			UINT strides[] = {sizeof(Vertex)}; //distance between 2 vertecies
-			UINT offsets[] = {0}; //where to start from in array
-
-			ID3D11ShaderResourceView* srvs[] = { skyView };
-			ID3D11UnorderedAccessView* uavs[] = { mistUAV };
-
+			//reset conbuff view and proj matrices
+			conBuff.view = XMMatrixTranspose(viewM);
+			conBuff.projection = XMMatrixTranspose(projM);
 
 			//draw skybox
 			viewDet = XMMatrixDeterminant(viewM);
@@ -1322,6 +1374,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->RSSetState(rState);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = { skyView };
 			myContext->PSSetShaderResources(0, 1, srvs);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
@@ -1357,7 +1410,6 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexedInstanced(indNums[0], TREE_INSTANCES, 0, 0, 0);
-			//draw RTT tree to back buffer
 
 			//draw plane
 			worldM = XMMatrixIdentity();
@@ -1377,6 +1429,29 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
+			// draw plane for rtt
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-10.0f, 15.0f, -35.0f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationX(XMConvertToRadians(90)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.2f, 0.2f, 0.2f), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[2];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[2], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = rttSrv;
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->DrawIndexed(indNums[2], 0, 0);
+			ID3D11ShaderResourceView* clr = nullptr;
+			myContext->PSSetShaderResources(0, 1, &clr);
 
 			//draw rock
 			worldM = XMMatrixIdentity();

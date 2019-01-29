@@ -29,7 +29,16 @@ cbuffer ConstantBuffer : register(b0)
 	float deltaT;
 }
 
+texture2D tree : register(t0);
+
+SamplerState treeFilter : register(s0);
+
 float4 main(PSVertex _input) : SV_TARGET
 {
-	 return _input.color;
+	float4 tex = tree.Sample(treeFilter, _input.uv);
+	if (tex.w == 0.0f)
+	{
+		discard;
+	}
+	return tex;
 }
