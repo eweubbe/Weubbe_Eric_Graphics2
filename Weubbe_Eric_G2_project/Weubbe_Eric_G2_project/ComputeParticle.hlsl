@@ -7,8 +7,8 @@ struct Particle
 StructuredBuffer<Particle> inBuff : register(t0);
 RWStructuredBuffer<Particle> outBuff : register(u0);
 
-[numthreads(1, 1, 1)]
+[numthreads(10, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	//outBuff[DTid.x].pos.x = inBuff[DTid.x].pos.x + 1;
+	
 }

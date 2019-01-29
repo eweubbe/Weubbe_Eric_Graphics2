@@ -1387,20 +1387,20 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
 			myContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-			srvs[0] = { mistSRV };
-			uavs[0] = { mistUAV };
 			//vs
 			myContext->VSSetShader(VSpart, 0, 0);
 			//cs
+			uavs[0] = { mistUAV };
+			myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0);
 			myContext->CSSetConstantBuffers(0, 1, &cBuffer);
-			myContext->CSSetShaderResources(0, 1, srvs);
-			//myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0); //this line fucks the buffer
-			myContext->CSGetUnorderedAccessViews(0, 1, uavs);
 			myContext->CSSetShader(CSpart, 0, 0);
-			myContext->Dispatch(1, 1, 1);
+			myContext->Dispatch(1000, 1, 1);
+			uavs[0] = { nullptr };
+			myContext->CSSetUnorderedAccessViews(0, 1, uavs, 0);
 			//gs
-			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
+			srvs[0] = { mistSRV };
 			myContext->GSSetShaderResources(0, 1, srvs);
+			myContext->GSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->GSSetSamplers(0, 1, &SamplerLinear);
 			myContext->GSSetShader(GSpart, 0, 0);
 			//ps
@@ -1409,6 +1409,8 @@ void LetsDrawSomeStuff::Render()
 			//draw
 			myContext->OMSetBlendState(blendState, NULL, 0xffffffff);
 			myContext->Draw(MIST_NUMS, 0);
+			srvs[0] = { nullptr };
+			myContext->GSSetShaderResources(0, 1, srvs);
 
 
 			//reset blend state
