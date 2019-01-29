@@ -113,9 +113,16 @@ class LetsDrawSomeStuff
 	ID3D11ShaderResourceView* mistSRV = nullptr;
 	ID3D11UnorderedAccessView* mistUAV = nullptr;
 	ID3D11Resource* mistRes = structBuffer;
+
 	//RTT plane
-	ID3D11Texture2D* planeRTT = nullptr;
-	ID3D11ShaderResourceView* planeSRV = nullptr;
+	ID3D11Texture2D* rttTex = nullptr;
+	ID3D11ShaderResourceView* rttSrv = nullptr;
+	ID3D11RenderTargetView* rttRtv;
+	//tex for depthstencil
+	ID3D11Texture2D* rttDepthTex = nullptr;
+	//dsv for depthstencil
+	ID3D11DepthStencilView* RttDsv = nullptr;
+	
 
 	//matrices
 	XMMATRIX worldM;
@@ -187,6 +194,11 @@ class LetsDrawSomeStuff
 
 	//cursor detection
 	POINT startingCursorPos;
+	//near and far plane info
+	float Znear = 0.01f;
+	float Zfar = 100.0f;
+	UINT vpWidth;
+	UINT vpHeight;
 	
 	//Test Functions
 	//fills array with appropriate vertex info to draw a test triangle
@@ -238,8 +250,6 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			// TODO: Create new DirectX stuff here! (Buffers, Shaders, Layouts, Views, Textures, etc...)
 
 			//set up viewport
-			UINT vpWidth;
-			UINT vpHeight;
 			attatchPoint->GetClientWidth(vpWidth);
 			attatchPoint->GetClientHeight(vpHeight);
 
@@ -276,6 +286,54 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = CreateDDSTextureFromFile(myDevice, L"Rock3_D.dds", (ID3D11Resource**)&rockTex, &rockView);
 			//sword 
 			hr = CreateDDSTextureFromFile(myDevice, L"PlayerWeapon_Diffuse.dds", (ID3D11Resource**)&swordTex, &swordView);
+
+			//RTT stuff
+			D3D11_TEXTURE2D_DESC rttTexDesc;
+			ZeroMemory(&rttTexDesc, sizeof(rttTexDesc));
+			rttTexDesc.ArraySize = 1;
+			rttTexDesc.Width = 1024;
+			rttTexDesc.Height = 1024;
+			rttTexDesc.MipLevels = 1;
+			rttTexDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			rttTexDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			rttTexDesc.Usage = D3D11_USAGE_DEFAULT;
+			rttTexDesc.SampleDesc.Count = 1;
+			rttTexDesc.SampleDesc.Quality = 0;
+			hr = myDevice->CreateTexture2D(&rttTexDesc, nullptr, &rttTex);
+
+			D3D11_TEXTURE2D_DESC rttDepthTexDesc;
+			ZeroMemory(&rttDepthTexDesc, sizeof(rttDepthTexDesc));
+			rttDepthTexDesc.ArraySize = 1;
+			rttDepthTexDesc.Width = 1024;
+			rttDepthTexDesc.Height = 1024;
+			rttDepthTexDesc.MipLevels = 1;
+			rttDepthTexDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			rttDepthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			rttDepthTexDesc.Usage = D3D11_USAGE_DEFAULT;
+			rttDepthTexDesc.SampleDesc.Count = 1;
+			rttDepthTexDesc.SampleDesc.Quality = 0;
+			hr = myDevice->CreateTexture2D(&rttDepthTexDesc, nullptr, &rttDepthTex);
+
+			D3D11_SHADER_RESOURCE_VIEW_DESC rttSrvDesc;
+			ZeroMemory(&rttSrvDesc, sizeof(rttSrvDesc));
+			rttSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			rttSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			rttSrvDesc.Texture2D.MipLevels = 1;
+			rttSrvDesc.Texture2D.MostDetailedMip = 0;
+			hr = myDevice->CreateShaderResourceView(rttTex, &rttSrvDesc, &rttSrv);
+			
+			D3D11_RENDER_TARGET_VIEW_DESC rttRtvDesc;
+			ZeroMemory(&rttRtvDesc, sizeof(rttRtvDesc));
+			rttRtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			rttRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			hr = myDevice->CreateRenderTargetView(rttTex, &rttRtvDesc, &rttRtv);
+
+			D3D11_DEPTH_STENCIL_VIEW_DESC rttDsvDesc;
+			ZeroMemory(&rttDsvDesc, sizeof(rttDsvDesc));
+			rttDsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			rttDsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			hr = myDevice->CreateDepthStencilView(rttDepthTex, &rttDsvDesc, &RttDsv);
+			//END RTT
 
 			// Create the sample state
 			D3D11_SAMPLER_DESC sampDesc = {};
@@ -376,7 +434,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			viewM = XMMatrixInverse(&viewDet, viewM);
 
 			//Initialize the projection matrix
-			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
+			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 
 			//SHADERS********************************************************************************
 			hr = myDevice->CreateVertexShader(MyVShader, sizeof(MyVShader), nullptr, &vShader);
@@ -1010,6 +1068,13 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 	if(mistUAV) mistUAV->Release();
 	if(SamplerLinear) SamplerLinear->Release();
 
+	//rtv releases
+	if (rttTex) rttTex->Release();
+	if (rttSrv) rttSrv->Release();
+	if (rttRtv) rttRtv->Release();
+	if (RttDsv) RttDsv->Release();
+	if (rttDepthTex) rttDepthTex->Release();
+
 	//delete dynamic memory
 	for (int i = 0; i < NUM_OBJECTS; ++i)
 		delete objs[i];
@@ -1027,15 +1092,13 @@ LetsDrawSomeStuff::~LetsDrawSomeStuff()
 void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event, GW::SYSTEM::GWindow* _window)
 {
 	//get new client width and height
-	UINT vpWidth;
-	UINT vpHeight;
 	_window->GetClientWidth(vpWidth);
 	_window->GetClientHeight(vpHeight);
 
 	myPort.Width = (float)vpWidth;
 	myPort.Height = (float)vpHeight;
 
-	projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, 0.01f, 100.0f);
+	projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 }
 
 // Draw
@@ -1043,8 +1106,6 @@ void LetsDrawSomeStuff::Render()
 {
 	if (mySurface) // valid?
 	{
-		
-
 		timer.Signal();
 		deltaT += (float)timer.Delta();
 
@@ -1133,6 +1194,25 @@ void LetsDrawSomeStuff::Render()
 				viewCpy = XMMatrixMultiply(viewCpy, XMMatrixTranslation(0.0f, -0.1f, 0.0f));
 			}
 
+			//near and far plane adjustment
+			if (GetAsyncKeyState('H'))
+			{
+				
+			}
+			if (GetAsyncKeyState('N'))
+			{
+				
+			}
+			if (GetAsyncKeyState('J'))
+			{
+				Zfar += 5.0f;
+			}
+			if (GetAsyncKeyState('M'))
+			{
+				Zfar -= 5.0f;
+			}
+
+			//look up and down
 			if ((abs(deltX) > 1))
 			{
 				XMVECTOR origPos = viewCpy.r[3];
@@ -1148,8 +1228,10 @@ void LetsDrawSomeStuff::Render()
 				startingCursorPos.y = currCursorPos.y;
 			}
 		}
+		//reset view and proj matrices w new info
 		XMFLOAT4 cameraPos = { viewM.r[3].m128_f32[0], viewM.r[3].m128_f32[1], viewM.r[3].m128_f32[2], viewM.r[3].m128_f32[3] };
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
+		projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 
 		// this could be changed during resolution edits, get it every frame
 
@@ -1276,8 +1358,6 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pSpec, 0, 0);
 			myContext->DrawIndexedInstanced(indNums[0], TREE_INSTANCES, 0, 0, 0);
 			//draw RTT tree to back buffer
-
-
 
 			//draw plane
 			worldM = XMMatrixIdentity();
