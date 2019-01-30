@@ -30,7 +30,6 @@ struct GSVertex
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
-	float4 color : COLOR;
 	float2 uv : TEXCOORD2;
 	float4 normal : NORMAL;
 };
@@ -61,16 +60,16 @@ void main(point GSVertex _input[1], inout TriangleStream < GSOutput > output)
 
 	for (int i = 0; i < 4; ++i)
 	{
-		verts[i].pos = mul(verts[i].pos, world);
+		//verts[i].pos = mul(verts[i].pos, world);
 
-		//normals
-		verts[i].normal = mul(verts[i].normal, world);
+		////normals
+		//verts[i].normal = mul(verts[i].normal, world);
 	}
 
 	matrix mVP = mul(view, projection);
 
 	for (uint i = 0; i < 4; ++i)
-		verts[i].pos = mul(verts[i].pos, mVP);
+		//verts[i].pos = mul(verts[i].pos, mVP);
 	
 	output.Append(verts[0]);
 	output.Append(verts[1]);

@@ -26,7 +26,7 @@
 #include "PSReflect.csh"
 #include "VSGeo.csh"
 #include "PSGeo.csh"
-#include "MyGeo.csh"
+//#include "MyGeo.csh"
 
 #include "ComputeParticle.csh"
 #include "VertexParticle.csh"
@@ -457,7 +457,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			hr = myDevice->CreatePixelShader(PSSpec, sizeof(PSSpec), nullptr, &pSpec);
 			hr = myDevice->CreatePixelShader(PSReflect, sizeof(PSReflect), nullptr, &pSReflect);
 			hr = myDevice->CreatePixelShader(PSGeo, sizeof(PSGeo), nullptr, &pSGeo);
-			hr = myDevice->CreateGeometryShader(MyGeo, sizeof(MyGeo), nullptr, &GShader1);
+			//hr = myDevice->CreateGeometryShader(MyGeo, sizeof(MyGeo), nullptr, &GShader1);
 			//particle shaders
 			hr = myDevice->CreateVertexShader(VertexParticle, sizeof(VertexParticle), nullptr, &VSpart);
 			hr = myDevice->CreatePixelShader(PixelParticle, sizeof(PixelParticle), nullptr, &PSpart);
@@ -914,56 +914,56 @@ void LetsDrawSomeStuff::LoadOBJVerts(const char* _filename, UINT _arrPos)
 		}
 
 		//debugging output
-		if (_DEBUG)
-		{
-			// print read in positions
-			/*cout << "Positions (x y z)\n";
-			for (int i = 0; i < posIn.size(); ++i)
-			{
-				cout << posIn[i].x << ' ' << posIn[i].y << ' ' << posIn[i].z << '\n';
-			}*/
+		//if (_DEBUG)
+		//{
+		//	// print read in positions
+		//	/*cout << "Positions (x y z)\n";
+		//	for (int i = 0; i < posIn.size(); ++i)
+		//	{
+		//		cout << posIn[i].x << ' ' << posIn[i].y << ' ' << posIn[i].z << '\n';
+		//	}*/
 
-			//print read in textures
-			/*cout << "Textures (u v)\n";
-			for (int i = 0; i < texIn.size(); ++i)
-			{
-				cout << texIn[i].x << ' ' << texIn[i].y << '\n';
-			}*/
+		//	//print read in textures
+		//	/*cout << "Textures (u v)\n";
+		//	for (int i = 0; i < texIn.size(); ++i)
+		//	{
+		//		cout << texIn[i].x << ' ' << texIn[i].y << '\n';
+		//	}*/
 
-			//print read in normals
-			/*cout << "Normals (x y z)\n";
-			for (int i = 0; i < normIn.size(); ++i)
-			{
-				cout << normIn[i].x << ' ' << normIn[i].y << ' ' << normIn[i].z << '\n';
-			}*/
+		//	//print read in normals
+		//	/*cout << "Normals (x y z)\n";
+		//	for (int i = 0; i < normIn.size(); ++i)
+		//	{
+		//		cout << normIn[i].x << ' ' << normIn[i].y << ' ' << normIn[i].z << '\n';
+		//	}*/
 
-			//cout << "Index (pos tex norm)\n";
-			//for (int i = 0; i < indexIn.size(); ++i)
-			//{
-			//	cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' '<< indexIn[i].z + 1 << '\n';
-			//}
+		//	//cout << "Index (pos tex norm)\n";
+		//	//for (int i = 0; i < indexIn.size(); ++i)
+		//	//{
+		//	//	cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' '<< indexIn[i].z + 1 << '\n';
+		//	//}
 
-			float epsilon = 0.00001f;
+		//	float epsilon = 0.00001f;
 
-			//FINAL VERT ARRAY
-			/*cout << "Vertex Data\n";
-			for (int i = 0; i < indexIn.size(); ++i)
-			{
-				if ((abs(verts[i].normal.x - (-0.757055000f)) < epsilon) && (abs(verts[i].normal.y - (0.070595000)) < epsilon) && (abs(verts[i].normal.z - (-0.649526000)) < epsilon))
-				{
-					cout << "Vertex " << i << ': ' << "Pos: " << verts[i].pos.x << ' ' << verts[i].pos.y << ' ' << verts[i].pos.z <<
-						" UV: " << verts[i].uv.x << ' ' << verts[i].uv.y <<
-						" Norm: " << verts[i].normal.x << ' ' << verts[i].normal.y << ' ' << verts[i].normal.z << '\n';
+		//	//FINAL VERT ARRAY
+		//	/*cout << "Vertex Data\n";
+		//	for (int i = 0; i < indexIn.size(); ++i)
+		//	{
+		//		if ((abs(verts[i].normal.x - (-0.757055000f)) < epsilon) && (abs(verts[i].normal.y - (0.070595000)) < epsilon) && (abs(verts[i].normal.z - (-0.649526000)) < epsilon))
+		//		{
+		//			cout << "Vertex " << i << ': ' << "Pos: " << verts[i].pos.x << ' ' << verts[i].pos.y << ' ' << verts[i].pos.z <<
+		//				" UV: " << verts[i].uv.x << ' ' << verts[i].uv.y <<
+		//				" Norm: " << verts[i].normal.x << ' ' << verts[i].normal.y << ' ' << verts[i].normal.z << '\n';
 
-					cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' ' << indexIn[i].z + 1 << '\n';
+		//			cout << indexIn[i].x + 1 << ' ' << indexIn[i].y + 1 << ' ' << indexIn[i].z + 1 << '\n';
 
-				}
-			}
-			cout << posIn[178].x << ' ' << posIn[178].y << ' ' << posIn[178].z << '\n';
-			cout << texIn[201].x << ' ' << texIn[201].y << '\n';
-			cout << normIn[362].x << ' ' << normIn[362].y << ' ' << normIn[362].z << '\n';*/
-			
-		}
+		//		}
+		//	}
+		//	cout << posIn[178].x << ' ' << posIn[178].y << ' ' << posIn[178].z << '\n';
+		//	cout << texIn[201].x << ' ' << texIn[201].y << '\n';
+		//	cout << normIn[362].x << ' ' << normIn[362].y << ' ' << normIn[362].z << '\n';*/
+		//	
+		//}
 
 		//assign temp vert array to array param
 		objs[_arrPos] = verts;

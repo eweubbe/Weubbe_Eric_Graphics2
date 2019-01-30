@@ -22,7 +22,6 @@ cbuffer ConstantBuffer : register(b0)
 struct PSInput
 {
 	float4 pos : SV_POSITION;
-	float4 color : COLOR;
 	float2 uv : TEXCOORD2;
 	float3 normal : NORMAL;
 	float4 worldPos : TEXCOORD3;

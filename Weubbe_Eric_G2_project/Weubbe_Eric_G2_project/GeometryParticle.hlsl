@@ -35,7 +35,6 @@ struct GSin
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
-	float4 color : COLOR;
 	float2 uv : TEXCOORD2;
 	float3 normal : NORMAL;
 	float4 worldPos : TEXCOORD3;
@@ -48,6 +47,12 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 {
 	GSOutput verts[4];
 
+	//UVs
+	verts[0].uv = float2(1, 0);
+	verts[1].uv = float2(0, 0);
+	verts[2].uv = float2(1, 1);
+	verts[3].uv = float2(0, 1);
+
 	//read in pos and norm info from srv
 	float4 tempPos = buffIn[index].pos;
 	float3 tempNorm = buffIn[index].norm;
@@ -55,7 +60,12 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 	//convert pos and norm data into world space
 	tempPos = mul(tempPos, world);
 	for (int i = 0; i < 4; ++i)
+	{
 		verts[i].worldPos = tempPos;
+		//assign normals to each vert
+		verts[i].normal = tempNorm;
+	}
+		
 	tempNorm = mul(tempNorm, world);
 
 	//convert them into view space
@@ -78,22 +88,14 @@ void main(point GSin _input[1], uint index : SV_PrimitiveID, inout TriangleStrea
 	{
 		verts[j].pos = mul(verts[j].pos, view);
 	}*/
-		
-	
 
 	for (uint i = 0; i < 4; ++i)
 	{
 		//convert view space positions into projection space
 		verts[i].pos = mul(verts[i].pos, projection);
-		//assign normals to each vert
-		verts[i].normal = tempNorm;
 	}
 		
-	//UVs
-	verts[0].uv = float2(1, 0);
-	verts[1].uv = float2(0, 0);
-	verts[2].uv = float2(1, 1);
-	verts[3].uv = float2(0, 1);
+	
 
 	output.Append(verts[0]);
 	output.Append(verts[1]);

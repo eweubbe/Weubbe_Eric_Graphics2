@@ -98,9 +98,6 @@
     <FxCompile Include="PixelParticle.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
-    <FxCompile Include="MyGeo.hlsl">
-      <Filter>Shaders\BasicGeo</Filter>
-    </FxCompile>
     <FxCompile Include="PSGeo.hlsl">
       <Filter>Shaders\BasicGeo</Filter>
     </FxCompile>
