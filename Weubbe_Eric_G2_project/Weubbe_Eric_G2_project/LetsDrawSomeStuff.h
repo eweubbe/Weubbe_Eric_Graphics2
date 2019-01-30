@@ -273,7 +273,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			LoadOBJVerts("sword1.txt", 4);
 			Mist(5);
 			Mist2(); //does not use vertex or index buffer
-			Plane(6);
+			LoadOBJVerts("shield.txt", 6);
 
 			//TEXTURES********************************************************************************
 			//dds loader way
@@ -1215,11 +1215,11 @@ void LetsDrawSomeStuff::Render()
 			}
 			if (GetAsyncKeyState('J'))
 			{
-				Zfar += 5.0f;
+				//Zfar += 5.0f;
 			}
 			if (GetAsyncKeyState('M'))
 			{
-				Zfar -= 5.0f;
+				//Zfar -= 5.0f;
 			}
 
 			//look up and down
@@ -1289,7 +1289,7 @@ void LetsDrawSomeStuff::Render()
 		//SET RTT RTV && DSV
 		ID3D11RenderTargetView* rttRtvs[] = { rttRtv };
 		myContext->OMSetRenderTargets(1, rttRtvs, RttDsv);
-		const float green[] = { 0.0f,1,0.2f, 1.0f };
+		const float green[] = { 0.3f,0.3f,0.3f, 1.0f };
 		myContext->ClearRenderTargetView(rttRtv, green);
 		myContext->ClearDepthStencilView(RttDsv, D3D11_CLEAR_DEPTH, 1, 0);
 		myContext->RSSetViewports(1, &rttVport);
@@ -1304,7 +1304,10 @@ void LetsDrawSomeStuff::Render()
 		//draw tree to rtt rtv
 		worldM = XMMatrixIdentity();
 		worldCpy = worldM;
-		worldCpy = XMMatrixMultiply(XMMatrixTranslation(0.0f, -2.0f, 0.0f), worldCpy);
+		worldCpy = XMMatrixMultiply(XMMatrixScaling(0.7f, 0.7f, 0.7f), worldCpy);
+		worldCpy = XMMatrixMultiply(XMMatrixRotationZ(XMConvertToRadians(120)), worldCpy);
+		//worldCpy = XMMatrixMultiply(XMMatrixRotationY(rotationDegree), worldCpy);
+		worldCpy = XMMatrixMultiply(XMMatrixTranslation(4.0f, -8.0f, 0.0f), worldCpy);
 		worldM = worldCpy;
 		conBuff.world = XMMatrixTranspose(worldM);
 		conBuff.view = XMMatrixTranspose(viewM2);
@@ -1360,6 +1363,8 @@ void LetsDrawSomeStuff::Render()
 			conBuff.projection = XMMatrixTranspose(projM);
 
 			//draw skybox
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
 			viewDet = XMMatrixDeterminant(viewM);
 			XMMATRIX temp = XMMatrixInverse(&viewDet, viewM);
 			temp = XMMatrixMultiply(temp, worldCpy);
@@ -1430,7 +1435,7 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetShader(pShader, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
 			// draw plane for rtt
-			worldM = XMMatrixIdentity();
+			/*worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-10.0f, 15.0f, -35.0f), worldCpy);
 			worldCpy = XMMatrixMultiply(XMMatrixRotationX(XMConvertToRadians(90)), worldCpy);
@@ -1450,6 +1455,28 @@ void LetsDrawSomeStuff::Render()
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[2], 0, 0);
+			ID3D11ShaderResourceView* clr = nullptr;
+			myContext->PSSetShaderResources(0, 1, &clr);*/
+
+			//draw shield
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(XMMatrixRotationY(XMConvertToRadians(180)), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[6];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[6], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = rttSrv;
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSolid, 0, 0);
+			myContext->DrawIndexed(indNums[6], 0, 0);
 			ID3D11ShaderResourceView* clr = nullptr;
 			myContext->PSSetShaderResources(0, 1, &clr);
 
