@@ -1461,7 +1461,10 @@ void LetsDrawSomeStuff::Render()
 			//draw shield
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
-			worldCpy = XMMatrixMultiply(XMMatrixRotationY(XMConvertToRadians(180)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-6.5f, 0.0f, -4.0f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationY(XMConvertToRadians(100)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationX(XMConvertToRadians(-20)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
