@@ -8,10 +8,14 @@ D -> right along x
 T -> Up
 G -> Down
 Mouse-> look around
+Z -> Zoom in
+X -> Zoom out
+J & M -> adjust far plane clipping
+H & N -> adjust near plane clipping
 
-The left rock is meant to show proper specular. The rock on the right is there to show what the rock would look like with out the specular shader.
+Particles are made with the geometry shader (point to quad) and all 10000 of them are moved with the compute shader.
 
-The red light is a spot light.
-The yellow light is a moving point light.
-The trees are drawn using DrawIndexedInstanced()
-The giant sword in the middle is reflecting the skybox.
+The shield demonstrates Render to Texture. There are trees being rendered on it.
+I think the shield also demonstrates multi-texturing. It uses the reflected skybox along with the trees rendered on it as its final texture.
+
+Both the rock and shield demonstrate specular highlights.

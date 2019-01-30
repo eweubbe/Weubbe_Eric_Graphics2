@@ -200,6 +200,7 @@ class LetsDrawSomeStuff
 	float Zfar = 100.0f;
 	UINT vpWidth;
 	UINT vpHeight;
+	float FoV = 65.0f;
 	
 	//Test Functions
 	//fills array with appropriate vertex info to draw a test triangle
@@ -444,7 +445,7 @@ LetsDrawSomeStuff::LetsDrawSomeStuff(GW::SYSTEM::GWindow* attatchPoint)
 			viewM = XMMatrixInverse(&viewDet, viewM);
 
 			//Initialize the projection matrix
-			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
+			projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(FoV), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 
 			//SHADERS********************************************************************************
 			hr = myDevice->CreateVertexShader(MyVShader, sizeof(MyVShader), nullptr, &vShader);
@@ -1108,7 +1109,7 @@ void LetsDrawSomeStuff::Resize(GW::SYSTEM::GWindowInputEvents _event, GW::SYSTEM
 	myPort.Width = (float)vpWidth;
 	myPort.Height = (float)vpHeight;
 
-	projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
+	projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(FoV), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 }
 
 // Draw
@@ -1208,18 +1209,48 @@ void LetsDrawSomeStuff::Render()
 			if (GetAsyncKeyState('H'))
 			{
 				Znear += 1.0f;
+				if (Znear >= Zfar - 1.0f)
+				{
+					Znear = Zfar -1.0f;
+				}
 			}
 			if (GetAsyncKeyState('N'))
 			{
 				Znear -= 1.0f;
+				if (Znear <= 0.1f)
+				{
+					Znear = 0.1f;
+				}
 			}
 			if (GetAsyncKeyState('J'))
 			{
 				Zfar += 1.0f;
+				if (Zfar >= 100)
+				{
+					Zfar = 100;
+				}
 			}
 			if (GetAsyncKeyState('M'))
 			{
 				Zfar -= 1.0f;
+				if (Zfar <= Znear + 1.0f)
+				{
+					Zfar = Znear + 1.0f;
+				}
+			}
+
+			//update FoV
+			if (GetAsyncKeyState('X'))
+			{
+				FoV += 0.5f;
+				if (FoV >= 120)
+					FoV = 120;
+			}
+			if (GetAsyncKeyState('Z'))
+			{
+				FoV -= 0.5f;
+				if (FoV <= 15)
+					FoV = 15;
 			}
 
 			//look up and down
@@ -1241,7 +1272,7 @@ void LetsDrawSomeStuff::Render()
 		//reset view and proj matrices w new info
 		XMFLOAT4 cameraPos = { viewM.r[3].m128_f32[0], viewM.r[3].m128_f32[1], viewM.r[3].m128_f32[2], viewM.r[3].m128_f32[3] };
 		viewM = XMMatrixInverse(&viewDet, viewCpy);
-		projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(65), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
+		projM = XMMatrixPerspectiveFovLH(XMConvertToRadians(FoV), vpWidth / (FLOAT)vpHeight, Znear, Zfar);
 
 		//SET UP INITIAL CONSTANT BUFFER DATA and INDEX AND VERTEX DATA
 		ID3D11Buffer* tempVB[] = { vBuffer[0] }; // multiple buffers would be for splitting data up, i.e. separate buffers for pos and color
