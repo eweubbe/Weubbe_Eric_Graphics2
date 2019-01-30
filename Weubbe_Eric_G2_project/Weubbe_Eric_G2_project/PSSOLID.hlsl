@@ -45,5 +45,20 @@ float4 main(PSVertex _input) : SV_TARGET
 	float3 reflection = reflect(-normalize(viewDirection), normalize(_input.normal));
 	color += sky.Sample(treeFilter, normalize(reflection));
 
-	return color * tex * 2;
+	color = color * tex * 2;
+
+	float3 viewDir = normalize((float3)camPos - (float3)_input.worldPos);
+	float3 lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
+	float3 reflection2 = reflect(lightDirection, reflection);
+	float fSpec = saturate(dot(reflection2, viewDir));
+	fSpec = pow(fSpec, PowInt.x);
+	color += lightCol[2] * fSpec * PowInt.y;
+
+	lightDirection = (float3) - lightDir[0];
+	reflection2 = reflect(lightDirection, reflection);
+	fSpec = saturate(dot(reflection2, viewDir));
+	fSpec = pow(fSpec, PowInt.x);
+	color += lightCol[0] * fSpec * PowInt.y;
+
+	return color;
 }
