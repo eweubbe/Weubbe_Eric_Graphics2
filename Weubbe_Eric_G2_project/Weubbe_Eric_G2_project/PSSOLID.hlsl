@@ -45,7 +45,13 @@ float4 main(PSVertex _input) : SV_TARGET
 	float3 reflection = reflect(-normalize(viewDirection), normalize(_input.normal));
 	color += sky.Sample(treeFilter, normalize(reflection));
 
-	color = color * tex * 2;
+	for (int i = 0; i < 8; ++i)
+	{
+		float4 pointDir = normalize(fairyPos[i] - _input.worldPos);
+		float lightRatio = saturate(dot(pointDir, _input.normal));
+		float atten = 1.0f - saturate((length(fairyPos[i] - _input.worldPos)) / pointRad);
+		color += lightCol[1] * lightRatio * atten;
+	}
 
 	float3 viewDir = normalize((float3)camPos - (float3)_input.worldPos);
 	float3 lightDirection = normalize((float3)_input.worldPos - (float3)lightDir[2]);
@@ -59,6 +65,8 @@ float4 main(PSVertex _input) : SV_TARGET
 	fSpec = saturate(dot(reflection2, viewDir));
 	fSpec = pow(fSpec, PowInt.x);
 	color += lightCol[0] * fSpec * PowInt.y;
+
+	color = color * tex * 2;
 
 	return color;
 }

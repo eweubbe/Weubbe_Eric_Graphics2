@@ -1467,6 +1467,7 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
+			conBuff.PowInt = XMFLOAT2(2.0f, 2.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[6];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
@@ -1493,7 +1494,7 @@ void LetsDrawSomeStuff::Render()
 			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
 			worldM = worldCpy;
 			conBuff.world = XMMatrixTranspose(worldM);
-			conBuff.PowInt = XMFLOAT2(0.0f, 0.0f);
+			conBuff.PowInt = XMFLOAT2(10.0f, 1.0f);
 			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
 			tempVB[0] = vBuffer[6];
 			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
