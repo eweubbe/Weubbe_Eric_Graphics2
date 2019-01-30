@@ -1458,7 +1458,7 @@ void LetsDrawSomeStuff::Render()
 			ID3D11ShaderResourceView* clr = nullptr;
 			myContext->PSSetShaderResources(0, 1, &clr);*/
 
-			//draw shield
+			//draw shield for rtt
 			worldM = XMMatrixIdentity();
 			worldCpy = worldM;
 			worldCpy = XMMatrixMultiply(XMMatrixTranslation(-6.5f, 0.0f, -4.0f), worldCpy);
@@ -1474,14 +1474,39 @@ void LetsDrawSomeStuff::Render()
 			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->VSSetShader(vShader, 0, 0);
-			srvs[0] = rttSrv;
-			myContext->PSSetShaderResources(0, 1, srvs);
+			ID3D11ShaderResourceView* srvs2[] = { rttSrv, skyView};
+			myContext->PSSetShaderResources(0, 2, srvs2);
 			myContext->PSSetSamplers(0, 1, &SamplerLinear);
 			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
 			myContext->PSSetShader(pSolid, 0, 0);
 			myContext->DrawIndexed(indNums[6], 0, 0);
 			ID3D11ShaderResourceView* clr = nullptr;
 			myContext->PSSetShaderResources(0, 1, &clr);
+
+			//draw mirror shield
+			worldM = XMMatrixIdentity();
+			worldCpy = worldM;
+			worldCpy = XMMatrixMultiply(XMMatrixTranslation(7.7f, 0.0f, -1.0f), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationY(XMConvertToRadians(190)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationX(XMConvertToRadians(-20)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixRotationZ(XMConvertToRadians(0)), worldCpy);
+			worldCpy = XMMatrixMultiply(XMMatrixScaling(0.5f, 0.5f, 0.5f), worldCpy);
+			worldM = worldCpy;
+			conBuff.world = XMMatrixTranspose(worldM);
+			conBuff.PowInt = XMFLOAT2(0.0f, 0.0f);
+			myContext->UpdateSubresource(cBuffer, 0, nullptr, &conBuff, 0, 0);
+			tempVB[0] = vBuffer[6];
+			myContext->IASetVertexBuffers(0, 1, tempVB, strides, offsets);
+			myContext->IASetIndexBuffer(iBuffer[6], DXGI_FORMAT_R32_UINT, 0);
+			myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			myContext->VSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->VSSetShader(vShader, 0, 0);
+			srvs[0] = skyView;
+			myContext->PSSetShaderResources(0, 1, srvs);
+			myContext->PSSetSamplers(0, 1, &SamplerLinear);
+			myContext->PSSetConstantBuffers(0, 1, &cBuffer);
+			myContext->PSSetShader(pSReflect, 0, 0);
+			//myContext->DrawIndexed(indNums[6], 0, 0);
 
 			//draw rock
 			worldM = XMMatrixIdentity();

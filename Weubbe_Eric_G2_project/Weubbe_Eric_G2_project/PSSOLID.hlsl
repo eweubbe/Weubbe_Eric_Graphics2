@@ -30,7 +30,7 @@ cbuffer ConstantBuffer : register(b0)
 }
 
 texture2D tree : register(t0);
-
+textureCUBE sky : register(t1);
 SamplerState treeFilter : register(s0);
 
 float4 main(PSVertex _input) : SV_TARGET
@@ -40,5 +40,10 @@ float4 main(PSVertex _input) : SV_TARGET
 	{
 		discard;
 	}
-	return tex;
+	float4 color = float4(0, 0, 0, 0);
+	float3 viewDirection = _input.boxPos - (_input.worldPos).xyz;
+	float3 reflection = reflect(-normalize(viewDirection), normalize(_input.normal));
+	color += sky.Sample(treeFilter, normalize(reflection));
+
+	return color * tex * 2;
 }
